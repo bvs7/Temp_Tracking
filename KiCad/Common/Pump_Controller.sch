@@ -1,0 +1,282 @@
+EESchema Schematic File Version 4
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 2 3
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L Motor:Motor_DC M?
+U 1 1 61011026
+P 5300 2900
+F 0 "M?" H 5458 2896 50  0000 L CNN
+F 1 "12V Pump" H 5458 2805 50  0000 L CNN
+F 2 "" H 5300 2810 50  0001 C CNN
+F 3 "~" H 5300 2810 50  0001 C CNN
+	1    5300 2900
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:D D?
+U 1 1 6101102C
+P 4950 2950
+F 0 "D?" V 4904 3030 50  0000 L CNN
+F 1 "D" V 4995 3030 50  0000 L CNN
+F 2 "" H 4950 2950 50  0001 C CNN
+F 3 "~" H 4950 2950 50  0001 C CNN
+	1    4950 2950
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	4950 2800 4950 2700
+Wire Wire Line
+	4950 2700 5300 2700
+$Comp
+L power:+12V #PWR?
+U 1 1 61011034
+P 5800 3850
+F 0 "#PWR?" H 5800 3700 50  0001 C CNN
+F 1 "+12V" H 5815 4023 50  0000 C CNN
+F 2 "" H 5800 3850 50  0001 C CNN
+F 3 "" H 5800 3850 50  0001 C CNN
+	1    5800 3850
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+12V #PWR?
+U 1 1 6101103A
+P 5300 2600
+F 0 "#PWR?" H 5300 2450 50  0001 C CNN
+F 1 "+12V" H 5315 2773 50  0000 C CNN
+F 2 "" H 5300 2600 50  0001 C CNN
+F 3 "" H 5300 2600 50  0001 C CNN
+	1    5300 2600
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 61011040
+P 5800 5100
+F 0 "#PWR?" H 5800 4850 50  0001 C CNN
+F 1 "GND" H 5805 4927 50  0000 C CNN
+F 2 "" H 5800 5100 50  0001 C CNN
+F 3 "" H 5800 5100 50  0001 C CNN
+	1    5800 5100
+	-1   0    0    -1  
+$EndComp
+$Comp
+L Device:D D?
+U 1 1 61011047
+P 5600 3400
+F 0 "D?" V 5554 3480 50  0000 L CNN
+F 1 "D" V 5645 3480 50  0000 L CNN
+F 2 "" H 5600 3400 50  0001 C CNN
+F 3 "~" H 5600 3400 50  0001 C CNN
+	1    5600 3400
+	1    0    0    -1  
+$EndComp
+$Comp
+L Switch:SW_SPDT_MSM SW?
+U 1 1 6101104E
+P 5300 3650
+F 0 "SW?" V 5346 3740 50  0000 L CNN
+F 1 "SW_SPDT" V 5255 3701 50  0000 L CNN
+F 2 "" H 5300 3650 50  0001 C CNN
+F 3 "~" H 5300 3650 50  0001 C CNN
+	1    5300 3650
+	0    -1   1    0   
+$EndComp
+$Comp
+L Relay:G5Q-1A K?
+U 1 1 61011054
+P 5600 4250
+F 0 "K?" H 5170 4296 50  0000 R CNN
+F 1 "AZ7709T-1AE-12DE" H 5170 4205 50  0000 R CNN
+F 2 "Relay_THT:Relay_SPST_Omron-G5Q-1A" H 5950 4200 50  0001 L CNN
+F 3 "https://www.omron.com/ecb/products/pdf/en-g5q.pdf" H 5600 4250 50  0001 C CNN
+	1    5600 4250
+	-1   0    0    -1  
+$EndComp
+$Comp
+L Transistor_FET:BS170 Q?
+U 1 1 6101105A
+P 5900 4850
+F 0 "Q?" H 6104 4896 50  0000 L CNN
+F 1 "BS170" H 6104 4805 50  0000 L CNN
+F 2 "Package_TO_SOT_THT:TO-92_Inline" H 6100 4775 50  0001 L CIN
+F 3 "https://www.onsemi.com/pub/Collateral/BS170-D.PDF" H 5900 4850 50  0001 L CNN
+	1    5900 4850
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	6250 4850 6150 4850
+Wire Wire Line
+	5300 2600 5300 2700
+Connection ~ 5300 2700
+Wire Wire Line
+	5800 4650 5800 4550
+Wire Wire Line
+	5800 3950 5800 3850
+Wire Wire Line
+	5800 5050 5800 5100
+$Comp
+L power:GND #PWR?
+U 1 1 61011066
+P 5400 4650
+F 0 "#PWR?" H 5400 4400 50  0001 C CNN
+F 1 "GND" H 5405 4477 50  0000 C CNN
+F 2 "" H 5400 4650 50  0001 C CNN
+F 3 "" H 5400 4650 50  0001 C CNN
+	1    5400 4650
+	-1   0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 6101106C
+P 5000 3950
+F 0 "#PWR?" H 5000 3700 50  0001 C CNN
+F 1 "GND" H 5005 3777 50  0000 C CNN
+F 2 "" H 5000 3950 50  0001 C CNN
+F 3 "" H 5000 3950 50  0001 C CNN
+	1    5000 3950
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	5400 4550 5400 4650
+Wire Wire Line
+	5300 3400 5450 3400
+Connection ~ 5300 3400
+Wire Wire Line
+	5300 3400 5300 3450
+Wire Wire Line
+	5300 3200 5300 3400
+Wire Wire Line
+	5300 3400 4950 3400
+Wire Wire Line
+	4950 3400 4950 3100
+Wire Wire Line
+	5400 3850 5400 3950
+Wire Wire Line
+	5750 3400 6450 3400
+Wire Wire Line
+	5000 3950 5200 3950
+Wire Wire Line
+	5200 3950 5200 3850
+Text HLabel 6250 4850 2    50   Input ~ 0
+PUMP_CTRL
+Text HLabel 6450 3400 2    50   Output ~ 0
+PUMP_SENSE
+$Comp
+L Device:R R?
+U 1 1 60E67605
+P 6150 5050
+F 0 "R?" H 6220 5096 50  0000 L CNN
+F 1 "R" H 6220 5005 50  0000 L CNN
+F 2 "" V 6080 5050 50  0001 C CNN
+F 3 "~" H 6150 5050 50  0001 C CNN
+	1    6150 5050
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:LED D?
+U 1 1 60E6760B
+P 6150 5400
+F 0 "D?" V 6189 5282 50  0000 R CNN
+F 1 "LED" V 6098 5282 50  0000 R CNN
+F 2 "" H 6150 5400 50  0001 C CNN
+F 3 "~" H 6150 5400 50  0001 C CNN
+	1    6150 5400
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 60E67611
+P 6150 5600
+AR Path="/60E68C49/60E67611" Ref="#PWR?"  Part="1" 
+AR Path="/60E68E60/60E67611" Ref="#PWR?"  Part="1" 
+AR Path="/60E68F4B/60E67611" Ref="#PWR?"  Part="1" 
+AR Path="/60E699AB/60E67611" Ref="#PWR?"  Part="1" 
+AR Path="/60E699EC/60E67611" Ref="#PWR?"  Part="1" 
+AR Path="/60FE860F/60E67611" Ref="#PWR?"  Part="1" 
+F 0 "#PWR?" H 6150 5350 50  0001 C CNN
+F 1 "GND" H 6155 5427 50  0000 C CNN
+F 2 "" H 6150 5600 50  0001 C CNN
+F 3 "" H 6150 5600 50  0001 C CNN
+	1    6150 5600
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6150 5550 6150 5600
+Wire Wire Line
+	6150 5200 6150 5250
+Wire Wire Line
+	6150 4900 6150 4850
+Connection ~ 6150 4850
+Wire Wire Line
+	6150 4850 6100 4850
+$Comp
+L Device:R R?
+U 1 1 60E68DD7
+P 4650 2850
+F 0 "R?" H 4720 2896 50  0000 L CNN
+F 1 "R" H 4720 2805 50  0000 L CNN
+F 2 "" V 4580 2850 50  0001 C CNN
+F 3 "~" H 4650 2850 50  0001 C CNN
+	1    4650 2850
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:LED D?
+U 1 1 60E68DDD
+P 4650 3200
+F 0 "D?" V 4689 3082 50  0000 R CNN
+F 1 "LED" V 4598 3082 50  0000 R CNN
+F 2 "" H 4650 3200 50  0001 C CNN
+F 3 "~" H 4650 3200 50  0001 C CNN
+	1    4650 3200
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	4650 3350 4650 3400
+Wire Wire Line
+	4650 3000 4650 3050
+Wire Wire Line
+	4650 3400 4950 3400
+Connection ~ 4950 3400
+Wire Wire Line
+	4950 2700 4650 2700
+Connection ~ 4950 2700
+$Comp
+L Device:C C?
+U 1 1 60E69E4C
+P 4650 3550
+F 0 "C?" H 4765 3596 50  0000 L CNN
+F 1 "C" H 4765 3505 50  0000 L CNN
+F 2 "" H 4688 3400 50  0001 C CNN
+F 3 "~" H 4650 3550 50  0001 C CNN
+	1    4650 3550
+	1    0    0    -1  
+$EndComp
+Connection ~ 4650 3400
+$Comp
+L power:GND #PWR?
+U 1 1 60E6B091
+P 4650 3750
+F 0 "#PWR?" H 4650 3500 50  0001 C CNN
+F 1 "GND" H 4655 3577 50  0000 C CNN
+F 2 "" H 4650 3750 50  0001 C CNN
+F 3 "" H 4650 3750 50  0001 C CNN
+	1    4650 3750
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	4650 3750 4650 3700
+$EndSCHEMATC

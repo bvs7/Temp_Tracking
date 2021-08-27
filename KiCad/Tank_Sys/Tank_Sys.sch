@@ -1,0 +1,306 @@
+EESchema Schematic File Version 4
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 3
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L Arduino:Arduino_Pro_Mini U?
+U 1 1 60E5DA35
+P 3250 3100
+F 0 "U?" H 3250 3989 60  0000 C CNN
+F 1 "Arduino_Pro_Mini" H 3250 3883 60  0000 C CNN
+F 2 "Arduino:Arduino_Pro_Mini" H 4050 2350 60  0001 C CNN
+F 3 "https://www.sparkfun.com/products/11113" H 3450 1900 60  0001 C CNN
+	1    3250 3100
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:Barrel_Jack J?
+U 1 1 60E63BA5
+P 1400 1300
+F 0 "J?" H 1457 1625 50  0000 C CNN
+F 1 "Barrel_Jack" H 1457 1534 50  0000 C CNN
+F 2 "" H 1450 1260 50  0001 C CNN
+F 3 "~" H 1450 1260 50  0001 C CNN
+	1    1400 1300
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+12V #PWR?
+U 1 1 60E65AA3
+P 1850 1050
+F 0 "#PWR?" H 1850 900 50  0001 C CNN
+F 1 "+12V" H 1865 1223 50  0000 C CNN
+F 2 "" H 1850 1050 50  0001 C CNN
+F 3 "" H 1850 1050 50  0001 C CNN
+	1    1850 1050
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 60E66776
+P 1850 1500
+F 0 "#PWR?" H 1850 1250 50  0001 C CNN
+F 1 "GND" H 1855 1327 50  0000 C CNN
+F 2 "" H 1850 1500 50  0001 C CNN
+F 3 "" H 1850 1500 50  0001 C CNN
+	1    1850 1500
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1700 1200 1850 1200
+Wire Wire Line
+	1850 1200 1850 1050
+Wire Wire Line
+	1700 1400 1850 1400
+Wire Wire Line
+	1850 1400 1850 1500
+$Comp
+L power:+12V #PWR?
+U 1 1 60E67415
+P 4050 2500
+F 0 "#PWR?" H 4050 2350 50  0001 C CNN
+F 1 "+12V" H 4065 2673 50  0000 C CNN
+F 2 "" H 4050 2500 50  0001 C CNN
+F 3 "" H 4050 2500 50  0001 C CNN
+	1    4050 2500
+	0    1    1    0   
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 60E67CFD
+P 3950 2600
+F 0 "#PWR?" H 3950 2350 50  0001 C CNN
+F 1 "GND" H 3955 2427 50  0000 C CNN
+F 2 "" H 3950 2600 50  0001 C CNN
+F 3 "" H 3950 2600 50  0001 C CNN
+	1    3950 2600
+	0    -1   -1   0   
+$EndComp
+$Comp
+L ESP8266:ESP-01v090 U?
+U 1 1 60E6BB22
+P 8350 3350
+F 0 "U?" H 8350 3865 50  0000 C CNN
+F 1 "ESP-01v090" H 8350 3774 50  0000 C CNN
+F 2 "" H 8350 3350 50  0001 C CNN
+F 3 "http://l0l.org.uk/2014/12/esp8266-modules-hardware-guide-gotta-catch-em-all/" H 8350 3350 50  0001 C CNN
+	1    8350 3350
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	10600 1300 10450 1300
+$Comp
+L power:GND #PWR?
+U 1 1 60E7792E
+P 10150 1800
+F 0 "#PWR?" H 10150 1550 50  0001 C CNN
+F 1 "GND" H 10155 1627 50  0000 C CNN
+F 2 "" H 10150 1800 50  0001 C CNN
+F 3 "" H 10150 1800 50  0001 C CNN
+	1    10150 1800
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	10150 1800 10150 1600
+Wire Wire Line
+	6250 3600 6250 2600
+Wire Wire Line
+	6250 2600 9300 2600
+Wire Wire Line
+	9300 2600 9300 3200
+$Comp
+L SparkFun-IC-Power:V_REG_LD1117VXX U?
+U 1 1 60E751B1
+P 10150 1300
+F 0 "U?" H 10150 1554 45  0000 C CNN
+F 1 "V_REG_LD1117V33" H 10150 1470 45  0000 C CNN
+F 2 "78XXL" H 10150 1500 20  0001 C CNN
+F 3 "" H 10150 1300 60  0001 C CNN
+F 4 "" H 10150 1481 60  0000 C CNN "Field4"
+	1    10150 1300
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	9300 3500 9850 3500
+$Comp
+L power:GND #PWR?
+U 1 1 60E98717
+P 6950 3200
+F 0 "#PWR?" H 6950 2950 50  0001 C CNN
+F 1 "GND" H 6955 3027 50  0000 C CNN
+F 2 "" H 6950 3200 50  0001 C CNN
+F 3 "" H 6950 3200 50  0001 C CNN
+	1    6950 3200
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	7400 3200 6950 3200
+Wire Wire Line
+	9300 3300 9850 3300
+Wire Wire Line
+	9850 3300 9850 3500
+Text GLabel 5000 6200 0    50   BiDi ~ 0
+PUMP_CTRL
+Text GLabel 5000 6300 0    50   BiDi ~ 0
+PUMP_SENSE
+Text GLabel 5000 5500 0    50   BiDi ~ 0
+VALVE_CTRL
+Text GLabel 5000 5600 0    50   BiDi ~ 0
+VALVE_SENSE
+$Comp
+L power:GND #PWR?
+U 1 1 60FAB64F
+P 5450 7350
+F 0 "#PWR?" H 5450 7100 50  0001 C CNN
+F 1 "GND" H 5455 7177 50  0000 C CNN
+F 2 "" H 5450 7350 50  0001 C CNN
+F 3 "" H 5450 7350 50  0001 C CNN
+	1    5450 7350
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	5550 7250 5450 7250
+Wire Wire Line
+	5450 7250 5450 7350
+Text GLabel 5050 7050 0    50   BiDi ~ 0
+DIST_TRIG
+Text GLabel 5050 7150 0    50   BiDi ~ 0
+DIST_ECHO
+Wire Wire Line
+	5050 7050 5550 7050
+Wire Wire Line
+	5550 7150 5050 7150
+Wire Wire Line
+	3850 2500 4050 2500
+Wire Wire Line
+	3850 2600 3950 2600
+Wire Wire Line
+	5000 5500 5150 5500
+Wire Wire Line
+	5150 5600 5000 5600
+$Sheet
+S 5150 6100 900  300 
+U 6100D536
+F0 "Pump_Controller" 50
+F1 "../Common/Pump_Controller.sch" 50
+F2 "PUMP_CTRL" I L 5150 6200 50 
+F3 "PUMP_SENSE" O L 5150 6300 50 
+$EndSheet
+Wire Wire Line
+	5000 6200 5150 6200
+Wire Wire Line
+	5150 6300 5000 6300
+Text GLabel 2050 3100 0    50   BiDi ~ 0
+PUMP_CTRL
+Text GLabel 2050 3200 0    50   BiDi ~ 0
+PUMP_SENSE
+Text GLabel 2050 2900 0    50   BiDi ~ 0
+VALVE_CTRL
+Text GLabel 2050 3000 0    50   BiDi ~ 0
+VALVE_SENSE
+Text GLabel 2050 3300 0    50   BiDi ~ 0
+DIST_TRIG
+Text GLabel 2050 3400 0    50   BiDi ~ 0
+DIST_ECHO
+Wire Wire Line
+	2050 2900 2650 2900
+Wire Wire Line
+	2050 3000 2650 3000
+Wire Wire Line
+	2050 3100 2650 3100
+Wire Wire Line
+	2050 3200 2650 3200
+Wire Wire Line
+	2050 3300 2650 3300
+Wire Wire Line
+	2050 3400 2650 3400
+$Comp
+L power:+12V #PWR?
+U 1 1 60E651F6
+P 10600 1150
+F 0 "#PWR?" H 10600 1000 50  0001 C CNN
+F 1 "+12V" H 10615 1323 50  0000 C CNN
+F 2 "" H 10600 1150 50  0001 C CNN
+F 3 "" H 10600 1150 50  0001 C CNN
+	1    10600 1150
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	10600 1150 10600 1300
+$Comp
+L Connector_Generic:Conn_01x04 J?
+U 1 1 60FA57D6
+P 5750 7050
+F 0 "J?" H 5830 7042 50  0000 L CNN
+F 1 "Distance Sensor" H 5830 6951 50  0000 L CNN
+F 2 "" H 5750 7050 50  0001 C CNN
+F 3 "~" H 5750 7050 50  0001 C CNN
+	1    5750 7050
+	1    0    0    -1  
+$EndComp
+Connection ~ 9850 3500
+Wire Wire Line
+	9850 3500 10200 3500
+$Comp
+L SparkFun-PowerSymbols:3.3V #SUPPLY?
+U 1 1 60E95E58
+P 10200 3500
+F 0 "#SUPPLY?" H 10250 3500 45  0001 L BNN
+F 1 "3.3V" H 10200 3670 45  0000 C CNN
+F 2 "" H 10200 3681 60  0000 C CNN
+F 3 "" H 10200 3500 60  0001 C CNN
+	1    10200 3500
+	1    0    0    -1  
+$EndComp
+$Comp
+L SparkFun-PowerSymbols:3.3V #SUPPLY?
+U 1 1 60E6D9ED
+P 9650 1300
+F 0 "#SUPPLY?" H 9700 1300 45  0001 L BNN
+F 1 "3.3V" H 9650 1470 45  0000 C CNN
+F 2 "" H 9650 1481 60  0000 C CNN
+F 3 "" H 9650 1300 60  0001 C CNN
+	1    9650 1300
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9850 1300 9650 1300
+$Comp
+L SparkFun-PowerSymbols:3.3V #SUPPLY?
+U 1 1 60E6F685
+P 5300 6850
+F 0 "#SUPPLY?" H 5350 6850 45  0001 L BNN
+F 1 "3.3V" H 5300 7020 45  0000 C CNN
+F 2 "" H 5300 7031 60  0000 C CNN
+F 3 "" H 5300 6850 60  0001 C CNN
+	1    5300 6850
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5300 6950 5300 6850
+Wire Wire Line
+	5300 6950 5550 6950
+Wire Wire Line
+	3850 3600 6250 3600
+Wire Wire Line
+	3850 3500 7400 3500
+$Sheet
+S 5150 5400 900  300 
+U 60FE860F
+F0 "Solenoid_Controller" 50
+F1 "../Common/Solenoid_Valve_Controller.sch" 50
+F2 "VALVE_CTRL" I L 5150 5500 50 
+F3 "VALVE_SENSE" O L 5150 5600 50 
+$EndSheet
+$EndSCHEMATC
