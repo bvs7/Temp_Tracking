@@ -1,0 +1,34 @@
+# TODO
+
+- [ ] Main-Tank Arduino Station
+  - [ ] Pump
+    - [ ] Control Wiring
+      - [ ] Test
+      - [ ] Soldering
+      - [ ] Mounting
+    - [ ] Enclosure
+    - [ ] Piping
+  - [ ] Trees Valve
+    - [ ] Control Wiring
+      - [ ] Test
+      - [ ] Soldering
+      - [ ] Mounting
+    - [ ] Enclosure
+    - [ ] Piping
+  - [ ] Distance Sensor
+    - [ ] Test Sensor
+    - [ ] Test Physical Concept
+    - [ ] Enclosue/Mounting
+    - [ ] Wiring
+  - [ ] Software
+    - [ ] Wifi
+    - [ ] MQTT
+    - [ ] Pump/Valve Control/Sense
+    - [ ] Distance Sensor
+    - [ ] Robustness/Sleep/Interrupts
+  
+- Raspberry Pi Base Station
+  - [ ] MQTT broker
+  - [ ] MQTT Server
+  - [ ] Status/Logging Database
+  - [ ] Webserver
