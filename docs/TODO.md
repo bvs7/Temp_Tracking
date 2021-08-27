@@ -27,7 +27,7 @@
     - [ ] Distance Sensor
     - [ ] Robustness/Sleep/Interrupts
   
-- Raspberry Pi Base Station
+- [ ] Raspberry Pi Base Station
   - [ ] MQTT broker
   - [ ] MQTT Server
   - [ ] Status/Logging Database
