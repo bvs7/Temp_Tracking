@@ -20,11 +20,32 @@
     - [ ] Test Physical Concept
     - [ ] Enclosue/Mounting
     - [ ] Wiring
+  - [ ] ESP8266 wiring
   - [ ] Software
     - [ ] Wifi
     - [ ] MQTT
     - [ ] Pump/Valve Control/Sense
     - [ ] Distance Sensor
+    - [ ] Robustness/Sleep/Interrupts
+
+- [ ] Raise Beds Arduino Station
+  - [ ] Valve Manifold
+    - [ ] Control Wiring
+      - [ ] Test
+      - [ ] Soldering
+      - [ ] Mounting
+    - [ ] Enclosure
+    - [ ] Piping
+  - [ ] Sensors
+    - [ ] Temperature Sensors
+    - [ ] Light Sensors
+    - [ ] Moisture Sensors
+  - [ ] ESP8266 wiring
+  - [ ] Software
+    - [ ] Wifi
+    - [ ] MQTT
+    - [ ] Valves Control/Sense
+    - [ ] Sensors Reading and interpreting
     - [ ] Robustness/Sleep/Interrupts
   
 - [ ] Raspberry Pi Base Station
