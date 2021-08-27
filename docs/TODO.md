@@ -32,3 +32,4 @@
   - [ ] MQTT Server
   - [ ] Status/Logging Database
   - [ ] Webserver
+  - [ ] Garden Controller
