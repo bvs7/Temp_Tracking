@@ -1,0 +1,3 @@
+(sym_lib_table
+  (lib (name Tank_Sys-rescue)(type Legacy)(uri ${KIPRJMOD}/Tank_Sys-rescue.lib)(options "")(descr ""))
+)
