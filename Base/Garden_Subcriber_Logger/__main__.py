@@ -1,5 +1,8 @@
 from paho.mqtt.client import Client as MQTTClient
+import time
 import logging
+
+STATUS_DATA_FNAME = "~/gemini-home-data/"
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -17,7 +20,15 @@ class GardenLoggerClient(MQTTClient):
 
   @staticmethod
   def on_message(client, userdata, message):
-    logging.debug(f"GardenLogger.on_message: {client}, {userdata}, {message.topic}, {message.payload.decode('utf-8')}")
+    logging.debug(f"GardenLoggerClient.on_message: {client}, {userdata}, {message.topic}, {message.payload.decode('utf-8')}")
+
+    # Based on topic take certain actions?
+    # Topic matching? Use regexp?
+
+    # if last word is /status, trace back for path?
+    # Update the status file
+
+
 
 client = GardenLoggerClient()
 
