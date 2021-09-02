@@ -20,7 +20,7 @@ status update can be requested by publishing "status" to `/valve/+` specific sen
 - `home/garden`
   - `/valve` (Irrigation Valves)
   - `/pump` (Irrigation Pumps)
-  - `/main-tank` (Rainwater Tank)
+  - `/level-sensor` (Rainwater Tank)
 
 ### Valves
 
@@ -40,10 +40,10 @@ status update can be requested by publishing "status" to `/valve/+` specific sen
   - `/main-tank`
     - `/control`, `/status`
 
-### Main-Tank
+### Level-Sensor
 
-- `home/garden/main-tank`
-  - `/level-sensor`
+- `home/garden/level-sensor`
+  - `/main-tank`
     - `/status`
 
 ### Station
