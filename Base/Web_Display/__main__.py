@@ -5,12 +5,10 @@ import logging
 
 app = Flask(__name__)
 
-GARDEN_DATABASE_FNAME = "../data/garden_data.db"
+GARDEN_DATABASE_FNAME = "../../data/garden_data.db"
 
 select_last = """SELECT * FROM {table_name}
 ORDER BY id DESC LIMIT 1"""
-
-garden_con = sqlite3.connect(GARDEN_DATABASE_FNAME)
 
 def get_data(con, table_name):
   cur = con.execute(select_last.format(table_name=table_name))
@@ -33,6 +31,7 @@ def index():
 @app.route("/garden/<device_type>")
 @app.route("/garden/<device_type>/<name>")
 def garden(device_type=None, name=None):
+  garden_con = sqlite3.connect(GARDEN_DATABASE_FNAME)
   entry = None
   if device_type and name:
     table_name = f"{device_type}_{name}".replace("-","")
@@ -42,13 +41,13 @@ def garden(device_type=None, name=None):
       pass
   
   if entry:
+    garden_con.close()
     return f"Garden, {device_type}/{name}: {entry[2]} at {entry[1]}"
   else:
-    return f"Garden: {', '.join(get_tables(garden_con))}"
+    tables = get_tables(garden_con)
+    garden_con.close()
+    return f"Garden: {', '.join(tables)}"
 
 
 if __name__ == "__main__":
-  try:
-    app.run(debug=True)
-  finally:
-    con.close()
+  app.run(debug=True, port=1121)
