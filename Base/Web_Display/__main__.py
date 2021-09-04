@@ -2,8 +2,12 @@ from flask import Flask, render_template
 import sqlite3
 import time
 import logging
+import json
 
 app = Flask(__name__)
+
+with open("main_context.json", 'r') as f:
+  main_context = json.load(f)
 
 GARDEN_DATABASE_FNAME = "../../data/garden_data.db"
 
@@ -25,28 +29,63 @@ def get_tables(con):
 
 @app.route("/")
 def index():
-  return "OK"
+  return render_template("base.html", **main_context)
 
-@app.route("/garden")
-@app.route("/garden/<device_type>")
-@app.route("/garden/<device_type>/<name>")
-def garden(device_type=None, name=None):
+
+@app.route("/garden/")
+def garden():
+  garden_con = sqlite3.connect(GARDEN_DATABASE_FNAME)
+  tables = get_tables(garden_con)
+  tables = [f"garden/{t}" for t in tables]
+  garden_con.close()
+  if len(tables) == 0:
+    return garden()
+  built_context = main_context.copy()
+  built_context["table_names"] = tables
+  return render_template("device_nav.html", **built_context)
+
+@app.route("/garden/<device_type>/")
+def garden_device(device_type=None):
+  garden_con = sqlite3.connect(GARDEN_DATABASE_FNAME)
+  tables = get_tables(garden_con)
+  garden_con.close()
+  device_tables = [d for d in tables if device_type in d]
+  device_tables = ["../garden"] + device_tables
+  if len(device_tables) == 0:
+    return garden()
+  built_context = main_context.copy()
+  built_context["table_names"] = device_tables
+  return render_template("device_nav.html", **built_context)
+
+@app.route("/garden/<device_type>/<name>/")
+def garden_device_name(device_type=None, name=None):
   garden_con = sqlite3.connect(GARDEN_DATABASE_FNAME)
   entry = None
   if device_type and name:
-    table_name = f"{device_type}_{name}".replace("-","")
+    table_name = f"[{device_type}/{name}]"
     try:
+      garden_con = sqlite3.connect(GARDEN_DATABASE_FNAME)
       entry = get_data(garden_con, table_name)
+      garden_con.close()
     except sqlite3.OperationalError:
       pass
-  
-  if entry:
-    garden_con.close()
-    return f"Garden, {device_type}/{name}: {entry[2]} at {entry[1]}"
-  else:
-    tables = get_tables(garden_con)
-    garden_con.close()
-    return f"Garden: {', '.join(tables)}"
+  if not entry:
+    return garden_device(device_type)
+  # TODO: Create a Data Entry Object?
+  data_list = [
+    {
+      "name" : device_type,
+      "details":[
+        ("Name",name),
+        ("Timestamp",entry[1]),
+        ("Status",entry[2])
+      ]
+    }
+  ]
+  built_context = main_context.copy()
+  built_context["data_list"] = data_list
+  # return f"Garden, {device_type}/{name}: {entry[2]} at {entry[1]}"
+  return render_template("data_display.html", **built_context)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 from paho.mqtt.client import Client as MQTTClient
 import sqlite3
 import time
+import datetime
 import logging
 
 DATABASE_FNAME = "../data/garden_data.db"
@@ -19,6 +20,11 @@ basic_insert = \
 """INSERT INTO {table_name} (time, status) VALUES (CURRENT_TIMESTAMP, {status})"""
 
 logging.basicConfig(level=logging.DEBUG, filename=LOG_FNAME)
+
+start = "START"
+l = (80-len(start))//2
+logging.info(f"\n\n{'='*l}START{'='*(80-l)}")
+logging.info(f"Start Time: {datetime.datetime.now()}")
 
 class GardenDataClient(MQTTClient):
 
@@ -40,7 +46,8 @@ class GardenDataClient(MQTTClient):
   def on_status_topic(self, client, userdata, message):
     logging.debug(f"GardenLoggerClient.on_status_topic: {client}, {userdata}, {message.topic}, {message.payload.decode('utf-8')}")
     topic_words = message.topic.split("/")
-    table_name = "_".join(topic_words[2:-1]).replace('-',"") # Assume home/garden/[type]/[name]/status format
+    table_name = "/".join(topic_words[2:-1])# Assume home/garden/[type]/[name]/status format
+    table_name = f"[{table_name}]"
     status = message.payload.decode("utf-8")
     try:
       status = int(status)
@@ -61,15 +68,17 @@ class GardenDataClient(MQTTClient):
     while True:
       try:
         command = basic_insert.format(table_name=table_name,status=status)
-        logging.debug(f"SQL Command: {command}")
         cur.execute(command)
+        logging.debug(f"SQL Command: {command}")
         break
       except sqlite3.OperationalError as oe:
         logging.warning(f"Error {oe} while writing to {table_name}. Creating table")
         status_type_dict = {str:"TEXT",float:"REAL",int:"INTEGER"}
-        cur.execute(create_table.format(
+        command = create_table.format(
           table_name=table_name, 
-          status_type=status_type_dict[type(status)]))
+          status_type=status_type_dict[type(status)])
+        cur.execute(command)
+        logging.debug(f"SQL Command: {command}")
         self.con.commit()
     self.con.commit()
     cur.close()

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% for entry in data_list %}
+
+    <h1> <li><a href="..">{{ entry.name }}</a></li></h1>
+
+    {% for detail in entry.details %}
+
+    <p> {{detail[0]}}: {{detail[1]}} </p>
+
+    {% endfor %}
+
+{% endfor %}
+
+{% endblock %}

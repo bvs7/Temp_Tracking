@@ -1,0 +1,12 @@
+{
+    "navigation":[
+        {
+            "href":"/garden",
+            "caption":"Garden"
+        },
+        {
+            "href":"/thermo",
+            "caption":"Thermo"
+        }
+    ]
+}

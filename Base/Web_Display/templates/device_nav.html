@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<ul id="navigation">
+    {% for name in table_names %}
+    <li><a href="../{{ name }}">{{ name }}</a></li>
+    {% endfor %}
+</ul>
+
+{% endblock %}
