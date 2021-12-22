@@ -4,6 +4,10 @@
   - [ ] Pump
     - [ ] Control Wiring
       - [ ] Test
+      - [ ] PCB
+        - [x] Relay Footprint
+        - [ ] Swtich Footprint?
+        - [ ] Layout
       - [ ] Soldering
       - [ ] Mounting
     - [ ] Enclosure
