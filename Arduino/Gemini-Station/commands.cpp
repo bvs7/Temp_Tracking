@@ -1,16 +1,10 @@
 
-#include <EEPROM.h>
-#include <SerialCommands.h>
-
 #include "commands.h"
 
-#define CONNSETT_ADDR_START 0x20
-
+#include "connection.h"
 
 char serial_command_buffer_[64];
 SerialCommands serial_commands_(&Serial, serial_command_buffer_, sizeof(serial_command_buffer_), "\r\n", " ");
-
-connection_settings_t conn_sett;
 
 void show_conn_sett_ssid(Stream *serial){
   serial->print("SSID:    ");
@@ -71,10 +65,6 @@ void read_all(SerialCommands *sender, char *buf){
   }
 }
 
-void save_conn(){
-  EEPROM.put(CONNSETT_ADDR_START, conn_sett);
-}
-
 void cmd_set(SerialCommands *sender){
   char *var = sender->Next();
   if(var == NULL){
@@ -100,6 +90,8 @@ void cmd_set(SerialCommands *sender){
   else if(strcmp(cmd, "server") == 0){
     strcpy(conn_sett.server, "");
     read_all(sender, conn_sett.server);
+    mqtt_client.disconnect();
+    mqtt_client.setServer(conn_sett.server, MQTT_PORT);
     show_conn_sett_server(sender->GetSerial());
     save_conn();
   }
@@ -139,7 +131,11 @@ void cmd_get(SerialCommands *sender){
   }else if(strcmp(cmd, "connection") == 0){
     show_conn_sett_all(sender->GetSerial());
     return;
-  }else {
+  }else if(strcmp(cms, "devices") == 0){
+    sender->GetSerial()->println("No devices now...");
+  }
+  
+  else {
     sender->GetSerial()->print("Error: Invalid setting name: ");
     sender->GetSerial()->println(cmd);
   }
@@ -155,7 +151,6 @@ void commands_setup() {
   serial_commands_.AddCommand(&cmd_set_);
   serial_commands_.AddCommand(&cmd_get_);
 
-  EEPROM.get(CONNSETT_ADDR_START, conn_sett);
 }
 
 void commands_loop() {

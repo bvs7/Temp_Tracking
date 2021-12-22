@@ -1,9 +1,8 @@
 
 #include "connection.h"
 
+#include <EEPROM.h>
 #include "utility.h"
-
-
 #include "connection_secret.h"
 
 #ifndef HAVE_HWSERIAL1
@@ -12,13 +11,24 @@ SoftwareSerial Serial1(2,3); // RX, TX
 #endif
 
 #define AT_BAUD_RATE 9600
+#define CONNSETT_ADDR_START 0x20
 
-int status = WL_IDLE_STATUS;     // the Wifi radio's status
+connection_settings_t conn_sett;
+
 
 WiFiEspClient wifi_client;
 PubSubClient mqtt_client(wifi_client);
 
+void mqtt_on_connect_def(){
+  // Default
+}
+
+void (*mqtt_on_connect)(void) = &mqtt_on_connect_def;
+
 bool wifi_connect(){
+
+  static int status = WL_IDLE_STATUS;
+
   WiFi.init(&Serial1);
   Serial.println("Attempting to setup WiFi");
   // check for the presence of the ESP8266
@@ -44,19 +54,13 @@ bool wifi_connect(){
   return true;
 }
 
-//void mqtt_callback(char* topic, byte* payload, unsigned int length) {
-//  dot();
-//}
-
-void mqtt_onConnect(){
-  
-}
-
 bool mqtt_connect(){
-  Serial.print("Attempting MQTT connection...");
+  mqtt_client.setServer(conn_sett.server, 1883);
+  Serial.print("Attempting MQTT connection... Server: ");
+  Serial.println("conn_sett.server");
   if(mqtt_client.connect(conn_sett.mqtt_id)){
-    Serial.println("Connected!");
-    mqtt_onConnect();
+    Serial.println("Connected to MQTT server!");
+    mqtt_on_connect();
   }else{
     Serial.print("failed, rc=");
     Serial.print(mqtt_client.state());
@@ -89,23 +93,19 @@ bool reconnect(){
   return true;
 }
 
-void connection_setup(){
+void save_conn(){
+  EEPROM.put(CONNSETT_ADDR_START, conn_sett);
+}
+
+void connection_setup(void (*mqtt_on_connect_)(void)){
   // initialize serial for ESP module
   Serial1.begin(AT_BAUD_RATE);
-  
-  mqtt_client.setServer(conn_sett.server, 1883);
-  //mqtt_client.setCallback(mqtt_callback);
+  mqtt_on_connect = mqtt_on_connect_;
+  EEPROM.get(CONNSETT_ADDR_START, conn_sett);
 }
 
 void connection_loop(){
-
-  static byte n = 0;
   while(!reconnect()); // Reconnect
 
   mqtt_client.loop();
-
-  if(!n++){
-    mqtt_client.publish("TestTopic", "Hello World!");
-    Serial.println("Sending testTopic publish");
-  }
 }
