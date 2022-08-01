@@ -1,7 +1,4 @@
 
-#include <EEPROM.h>
-#include <SerialCommands.h>
-
 #include "commands.h"
 
 #include "PipedStream.h"
@@ -82,10 +79,6 @@ void read_all(SerialCommands *sender, char *buf){
   }
 }
 
-void save_conn(){
-  EEPROM.put(CONNSETT_ADDR_START, conn_sett);
-}
-
 void cmd_set(SerialCommands *sender){
   char *var = sender->Next();
   if(var == NULL){
@@ -111,6 +104,8 @@ void cmd_set(SerialCommands *sender){
   else if(strcmp(cmd, "server") == 0){
     strcpy(conn_sett.server, "");
     read_all(sender, conn_sett.server);
+    mqtt_client.disconnect();
+    mqtt_client.setServer(conn_sett.server, MQTT_PORT);
     show_conn_sett_server(sender->GetSerial());
     save_conn();
   }

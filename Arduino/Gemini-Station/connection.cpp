@@ -9,8 +9,10 @@ SoftwareSerial Serial1(2,3); // RX, TX
 #endif
 
 #define AT_BAUD_RATE 9600
+#define CONNSETT_ADDR_START 0x20
 
-int status = WL_IDLE_STATUS;     // the Wifi radio's status
+connection_settings_t conn_sett;
+
 
 WiFiEspClient wifi_client;
 PubSubClient mqtt_client(wifi_client);
@@ -18,6 +20,9 @@ PubSubClient mqtt_client(wifi_client);
 unsigned long reconnect_time_millis = 0;
 
 bool wifi_connect(){
+
+  static int status = WL_IDLE_STATUS;
+
   WiFi.init(&Serial1);
   // check for the presence of the ESP8266
   if (WiFi.status() == WL_NO_SHIELD) {
@@ -91,7 +96,11 @@ bool reconnect(){
   return true;
 }
 
-void connection_setup(){
+void save_conn(){
+  EEPROM.put(CONNSETT_ADDR_START, conn_sett);
+}
+
+void connection_setup(void (*mqtt_on_connect_)(void)){
   // initialize serial for ESP module
   Serial1.begin(AT_BAUD_RATE);
   

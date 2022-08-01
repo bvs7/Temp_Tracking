@@ -49,8 +49,20 @@ void callback(const char* topic, byte* payload, unsigned int length){
   // Device topic, handle device
 }
 
-void setup()
-{
+void mqtt_on_connect(){
+  mqtt_client.subscribe("debug/test");
+  mqtt_client.publish("debug/test", "Connected");
+}
+
+void mqtt_callback(char* topic, byte* payload, unsigned int length) {
+  Serial.print("Recieved message on topic ");
+  Serial.print(topic);
+  Serial.println(":");
+  Serial.println(payload);
+  dot();
+}
+
+void setup(){
   util_setup();
   commands_setup();
   connection_setup();
@@ -59,9 +71,7 @@ void setup()
 
 }
 
-void loop()
-{
-  connection_loop();
+void loop(){
   commands_loop();
 
   unsigned long current_millis = millis();

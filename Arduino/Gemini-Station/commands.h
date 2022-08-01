@@ -7,6 +7,7 @@
 
 #include "PipedStream.h"
 
+#define DEBUG_BAUD_RATE 9600
 
 void commands_setup();
 void commands_loop();

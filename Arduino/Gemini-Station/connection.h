@@ -5,19 +5,35 @@
 
 #include "WiFiEsp.h"
 #include "PubSubClient.h"
+<<<<<<< HEAD
 
 #include "utility.h"
+=======
+>>>>>>> 667ce65d13d7b4fe87db38398ffd92d1e11d51c9
 
-void connection_setup();
-void connection_loop();
+#define SETTINGS_SIZE 32
+
+#define MQTT_PORT 1883
+
+typedef struct connection_settings{
+  char ssid[SETTINGS_SIZE];
+  char pass[SETTINGS_SIZE];
+  char server[SETTINGS_SIZE];
+  char mqtt_id[SETTINGS_SIZE];
+} connection_settings_t;
+
 
 bool wifi_connect();
-void mqtt_callback(char* topic, byte* payload, unsigned int length);
-void mqtt_onConnect();
 bool mqtt_connect();
+// Use mqtt_client.setCallback() to set callback
 bool reconnect();
+void save_conn();
+
+void connection_setup(void (*mqtt_on_connect)(void));
+void connection_loop();
 
 extern WiFiEspClient wifi_client;
 extern PubSubClient mqtt_client;
+extern connection_settings_t conn_sett;
 
 #endif
