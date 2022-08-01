@@ -5,7 +5,8 @@
 
 #include "WiFiEsp.h"
 #include "PubSubClient.h"
-#include "commands.h"
+
+#include "utility.h"
 
 void connection_setup();
 void connection_loop();

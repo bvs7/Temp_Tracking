@@ -14,7 +14,7 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Comp
-L Arduino:Arduino_Pro_Mini U?
+L Garden_Sys-rescue:Arduino_Pro_Mini-Arduino U?
 U 1 1 60E638E0
 P 2800 2500
 F 0 "U?" H 2800 3389 60  0000 C CNN
@@ -36,7 +36,7 @@ F 3 "~" H 1200 1010 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L SparkFun-IC-Power:V_REG_LD1117VXX U?
+L Garden_Sys-rescue:V_REG_LD1117VXX-SparkFun-IC-Power U?
 U 1 1 60E66743
 P 4300 1100
 F 0 "U?" H 4300 1354 45  0000 C CNN
@@ -48,7 +48,7 @@ F 4 "" H 4300 1281 60  0000 C CNN "Field4"
 	1    0    0    -1  
 $EndComp
 $Comp
-L ESP8266:ESP-01v090 U?
+L Garden_Sys-rescue:ESP-01v090-ESP8266 U?
 U 1 1 60E67408
 P 5150 2350
 F 0 "U?" H 5150 2865 50  0000 C CNN

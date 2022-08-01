@@ -26,8 +26,8 @@
     - [ ] Wiring
   - [ ] ESP8266 wiring
   - [ ] Software
-    - [ ] Wifi
-    - [ ] MQTT
+    - [x] Wifi
+    - [x] MQTT
     - [ ] Pump/Valve Control/Sense
     - [ ] Distance Sensor
     - [ ] Robustness/Sleep/Interrupts

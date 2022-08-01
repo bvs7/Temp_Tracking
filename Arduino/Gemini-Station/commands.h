@@ -3,19 +3,14 @@
 
 #define DEBUG_BAUD_RATE 9600
 
-#define SETTINGS_SIZE 32
+#include "utility.h"
 
-typedef struct connection_settings{
-  char ssid[SETTINGS_SIZE];
-  char pass[SETTINGS_SIZE];
-  char server[SETTINGS_SIZE];
-  char mqtt_id[SETTINGS_SIZE];
-} connection_settings_t;
+#include "PipedStream.h"
 
 
 void commands_setup();
 void commands_loop();
 
-extern connection_settings_t conn_sett;
+extern PipedStream& command_handle;
 
 #endif

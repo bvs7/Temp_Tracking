@@ -1,9 +1,6 @@
 
 #include "connection.h"
 
-#include "utility.h"
-
-
 #include "connection_secret.h"
 
 #ifndef HAVE_HWSERIAL1
@@ -18,12 +15,12 @@ int status = WL_IDLE_STATUS;     // the Wifi radio's status
 WiFiEspClient wifi_client;
 PubSubClient mqtt_client(wifi_client);
 
+unsigned long reconnect_time_millis = 0;
+
 bool wifi_connect(){
   WiFi.init(&Serial1);
-  Serial.println("Attempting to setup WiFi");
   // check for the presence of the ESP8266
   if (WiFi.status() == WL_NO_SHIELD) {
-    Serial.println("ESP8266 not detected");
     return false;
   }
 
@@ -40,7 +37,8 @@ bool wifi_connect(){
       return false;
     }
   }
-  Serial.println("You're connected to the network!");
+  
+  Serial.println("Connected to Wifi");
   return true;
 }
 
@@ -49,43 +47,47 @@ bool wifi_connect(){
 //}
 
 void mqtt_onConnect(){
-  
+  mqtt_client.subscribe("cmd/irrigation/garden_station0");
+  Serial.println("Subscribed to station topic");
 }
 
 bool mqtt_connect(){
   Serial.print("Attempting MQTT connection...");
+  delay(100);
   if(mqtt_client.connect(conn_sett.mqtt_id)){
-    Serial.println("Connected!");
+    Serial.println("Connected to mqtt server");
     mqtt_onConnect();
   }else{
     Serial.print("failed, rc=");
     Serial.print(mqtt_client.state());
     Serial.println("...");
+    return false;
   }
+  return true;
 }
 
-bool reconnect(){
+bool reconnect(){  
   if(wifi_client.connected() && mqtt_client.connected()){
     return true;
   }
-  dot(); space(); // . represents trying to reconnect
+  
   if(!wifi_client.connected()){
-    dot(); dot(); space(); // .. represents missing wifi connection
     if(!wifi_connect()){
-      dash();dash();space(); space(); // -- represents failed wifi connection
+      dash(); space();space(); dash(); space();space(); dash(); space();space();space();// -- represents failed wifi connection
       return false;
     }
   }
 
   if(!mqtt_client.connected()){
-    dot(); dot(); dot(); space(); // ... represents missing mqtt server connection
+    //dot(); dot(); dot(); space(); // ... represents missing mqtt server connection
     if(!mqtt_connect()){
-      dash();dash();dash(); space(); space();
+      dash(); space();space(); dot(); dash(); space();space(); dot(); dash(); space();space();space();
       // --- represents failed mqtt server connection
       return false;
     }
   }
-  dot(); dash(); dot(); dash(); // .-.- represents successfully connected
+  dot(); dot(); dot(); dot(); dot(); dot();space(); space(); 
+  dot(); dot(); dot(); dot(); dot(); dot();space(); space(); // .-.- represents successfully connected
   return true;
 }
 
@@ -94,18 +96,19 @@ void connection_setup(){
   Serial1.begin(AT_BAUD_RATE);
   
   mqtt_client.setServer(conn_sett.server, 1883);
-  //mqtt_client.setCallback(mqtt_callback);
+
+  delay(100);
 }
 
 void connection_loop(){
-
-  static byte n = 0;
-  while(!reconnect()); // Reconnect
-
-  mqtt_client.loop();
-
-  if(!n++){
-    mqtt_client.publish("TestTopic", "Hello World!");
-    Serial.println("Sending testTopic publish");
+  if(mqtt_client.connected()){
+    mqtt_client.loop();
+  }else{
+    if(millis() > reconnect_time_millis){
+      reconnect();
+      reconnect_time_millis = millis() + 60000;
+    }
   }
+
+
 }

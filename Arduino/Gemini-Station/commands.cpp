@@ -4,13 +4,23 @@
 
 #include "commands.h"
 
+#include "PipedStream.h"
+
+#include "connection.h"
+
 #define CONNSETT_ADDR_START 0x20
 
+#define BUFFER_SIZES 64
 
-char serial_command_buffer_[64];
-SerialCommands serial_commands_(&Serial, serial_command_buffer_, sizeof(serial_command_buffer_), "\r\n", " ");
+// Set up bidirectional input/output for SerialCommands
+PipedStreamPair command_streams(BUFFER_SIZES);
+PipedStream& command_handle = command_streams.first;
+PipedStream& command_internal = command_streams.second;
 
-connection_settings_t conn_sett;
+
+char serial_command_buffer_[BUFFER_SIZES];
+SerialCommands serial_commands_((Stream*)&command_internal, serial_command_buffer_, 
+  sizeof(serial_command_buffer_), "\n", " ");
 
 void show_conn_sett_ssid(Stream *serial){
   serial->print("SSID:    ");
@@ -42,6 +52,7 @@ void cmd_unrecognized(SerialCommands* sender, const char* cmd)
   sender->GetSerial()->print("Unrecognized command [");
   sender->GetSerial()->print(cmd);
   sender->GetSerial()->println("]");
+  sender->GetSerial()->print('\0'); // Send.
 }
 
 void read_all(SerialCommands *sender, char *buf){
@@ -113,6 +124,7 @@ void cmd_set(SerialCommands *sender){
     sender->GetSerial()->print("Error: Invalid setting name: ");
     sender->GetSerial()->println(cmd);
   }
+  sender->GetSerial()->print('\0'); // Send.
 }
 SerialCommand cmd_set_("set", cmd_set);
 
@@ -126,25 +138,28 @@ void cmd_get(SerialCommands *sender){
   strncpy(cmd, var, 16-1);
   if(strcmp(cmd, "ssid") == 0){
     show_conn_sett_ssid(sender->GetSerial());
-    return;
   }else if(strcmp(cmd, "pass") == 0){
     show_conn_sett_pass(sender->GetSerial());
-    return;
   }else if(strcmp(cmd, "server") == 0){
     show_conn_sett_server(sender->GetSerial());
-    return;
   }else if(strcmp(cmd, "mqtt_id") == 0){
     show_conn_sett_mqtt_id(sender->GetSerial());
-    return;
   }else if(strcmp(cmd, "connection") == 0){
     show_conn_sett_all(sender->GetSerial());
-    return;
   }else {
     sender->GetSerial()->print("Error: Invalid setting name: ");
     sender->GetSerial()->println(cmd);
   }
+  sender->GetSerial()->print('\0'); // Send.
 }
 SerialCommand cmd_get_("get", cmd_get);
+
+
+void cmd_echo(SerialCommands *sender){
+  sender->GetSerial()->println("echo!");
+  sender->GetSerial()->print("\0"); // Send.
+}
+SerialCommand cmd_echo_("echo", cmd_echo);
 
 
 void commands_setup() {
@@ -154,10 +169,26 @@ void commands_setup() {
   serial_commands_.SetDefaultHandler(cmd_unrecognized);
   serial_commands_.AddCommand(&cmd_set_);
   serial_commands_.AddCommand(&cmd_get_);
+  serial_commands_.AddCommand(&cmd_echo_);
 
+  // TODO: do this elsewhere?
   EEPROM.get(CONNSETT_ADDR_START, conn_sett);
 }
 
 void commands_loop() {
+  while(Serial.available()){
+    command_handle.write(Serial.read());
+  }
+  
   serial_commands_.ReadSerial();
+
+  if(command_handle.available()){
+    String resp = command_handle.readStringUntil('\0');
+    if(Serial){
+      Serial.print(resp);
+    }
+    if(mqtt_client.connected()){
+      mqtt_client.publish("data/irrigation/garden_station0", resp.c_str());
+    }
+  }
 }
