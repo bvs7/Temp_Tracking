@@ -135,3 +135,6 @@ dmypy.json
 
 # Database
 data/*
+
+# vscode properties
+.vscode/*
