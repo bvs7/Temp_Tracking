@@ -13,5 +13,6 @@ void commands_setup();
 void commands_loop();
 
 extern PipedStream& command_handle;
+extern PipedStream& command_internal;
 
 #endif

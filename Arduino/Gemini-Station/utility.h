@@ -3,6 +3,13 @@
 
 #include "Arduino.h"
 
+#define CMD_STATION_TOPIC "cmd/irrigation/garden_station0"
+#define CMD_STATION_TOPIC_LEN (sizeof(CMD_STATION_TOPIC) - 1)
+#define DATA_STATION_TOPIC "data/irrigation/garden_station0"
+#define DATA_STATION_TOPIC_LEN (sizeof(DATA_STATION_TOPIC) - 1)
+#define ERROR_STATION_TOPIC "error/irrigation/garden_station0"
+#define ERROR_STATION_TOPIC_LEN (sizeof(ERROR_STATION_TOPIC) - 1)
+
 void dot();
 void dash();
 void space();
@@ -10,41 +17,10 @@ void util_setup();
 
 #define SETTINGS_SIZE 32
 
-typedef struct connection_settings{
-  char ssid[SETTINGS_SIZE];
-  char pass[SETTINGS_SIZE];
-  char server[SETTINGS_SIZE];
-  char mqtt_id[SETTINGS_SIZE];
-} connection_settings_t;
+#define CTRL_MASK 0x01
+#define STATE_MASK 0x02
+enum state{OFF_ = 0, UNPOWERED = 1, OVERRIDE = 2, ON_ = 3};
 
-extern connection_settings_t conn_sett;
-
-enum state{OFF, UNPOWERED, OVERRIDE, ON};
-
-class sense_ctrl_port{
-  unsigned char sense;
-  unsigned char ctrl;
-  unsigned char ctrl_state = 0;
-  
-  public:
-  sense_ctrl_port(unsigned char sense_pin, unsigned char ctrl_pin){
-    sense = sense_pin;
-    ctrl = ctrl_pin;
-  
-    pinMode(sense, INPUT);
-    pinMode(ctrl, OUTPUT);
-
-    digitalWrite(ctrl, ctrl_state);
-  }
-
-  unsigned char get_state(){
-    return (digitalRead(sense) << 1) | ctrl_state;
-  }
-
-  void set_output(unsigned char ctrl_output){
-    ctrl_state = ctrl_output;
-    digitalWrite(ctrl, ctrl_output);
-  }
-};
+extern char state_string[4][10];
 
 #endif

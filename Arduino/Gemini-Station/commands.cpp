@@ -1,6 +1,8 @@
 
 #include "commands.h"
 
+#include "SerialCommands.h"
+#include "EEPROM.h"
 #include "PipedStream.h"
 
 #include "connection.h"
@@ -15,7 +17,6 @@
 PipedStreamPair command_streams(BUFFER_SIZES);
 PipedStream& command_handle = command_streams.first;
 PipedStream& command_internal = command_streams.second;
-
 
 char serial_command_buffer_[BUFFER_SIZES];
 SerialCommands serial_commands_((Stream*)&command_internal, serial_command_buffer_, 

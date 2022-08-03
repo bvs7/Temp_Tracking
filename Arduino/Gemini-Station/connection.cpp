@@ -1,18 +1,19 @@
 
 #include "connection.h"
-
 #include "connection_secret.h"
+
+#include "EEPROM.h"
 
 #ifndef HAVE_HWSERIAL1
 #include "SoftwareSerial.h"
 SoftwareSerial Serial1(2,3); // RX, TX
 #endif
 
+
 #define AT_BAUD_RATE 9600
 #define CONNSETT_ADDR_START 0x20
 
 connection_settings_t conn_sett;
-
 
 WiFiEspClient wifi_client;
 PubSubClient mqtt_client(wifi_client);
@@ -52,7 +53,7 @@ bool wifi_connect(){
 //}
 
 void mqtt_onConnect(){
-  mqtt_client.subscribe("cmd/irrigation/garden_station0");
+  mqtt_client.subscribe(CMD_STATION_TOPIC);
   Serial.println("Subscribed to station topic");
 }
 
@@ -100,7 +101,7 @@ void save_conn(){
   EEPROM.put(CONNSETT_ADDR_START, conn_sett);
 }
 
-void connection_setup(void (*mqtt_on_connect_)(void)){
+void connection_setup(){
   // initialize serial for ESP module
   Serial1.begin(AT_BAUD_RATE);
   

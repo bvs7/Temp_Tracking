@@ -5,7 +5,6 @@
 
 #include "WiFiEsp.h" // WifiEsp library for wifi with esp8266
 #include "PubSubClient.h" // PubSubClient library for MQTT
-<<<<<<< HEAD
 
 #include "utility.h"
 
@@ -27,7 +26,7 @@ bool mqtt_connect();
 bool reconnect();
 void save_conn();
 
-void connection_setup(void (*mqtt_on_connect)(void));
+void connection_setup();
 void connection_loop();
 
 extern WiFiEspClient wifi_client;

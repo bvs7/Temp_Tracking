@@ -1,8 +1,10 @@
 #include "utility.h"
 
-connection_settings_t conn_sett;
-
 #define MORSE_UNIT_MILLIS 70
+
+char state_string[4][10] = {
+  "OFF", "UNPOWERED", "OVERRIDE", "ON"
+};
 
 void dot(){
   digitalWrite(LED_BUILTIN, HIGH);
