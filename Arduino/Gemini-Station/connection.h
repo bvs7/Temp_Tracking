@@ -3,13 +3,11 @@
 
 #include "Arduino.h"
 
-#include "WiFiEsp.h"
-#include "PubSubClient.h"
+#include "WiFiEsp.h" // WifiEsp library for wifi with esp8266
+#include "PubSubClient.h" // PubSubClient library for MQTT
 <<<<<<< HEAD
 
 #include "utility.h"
-=======
->>>>>>> 667ce65d13d7b4fe87db38398ffd92d1e11d51c9
 
 #define SETTINGS_SIZE 32
 

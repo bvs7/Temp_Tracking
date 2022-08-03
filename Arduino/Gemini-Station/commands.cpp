@@ -9,6 +9,8 @@
 
 #define BUFFER_SIZES 64
 
+// Add more commands externally?
+
 // Set up bidirectional input/output for SerialCommands
 PipedStreamPair command_streams(BUFFER_SIZES);
 PipedStream& command_handle = command_streams.first;

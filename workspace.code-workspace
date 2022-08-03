@@ -12,6 +12,7 @@
 				"port": 1883,
 				"clientId": "vsmqtt_client"
 			}
-		]
+		],
+		"arduino.path": "C:\\Program Files (x86)\\Arduino"
 	}
 }

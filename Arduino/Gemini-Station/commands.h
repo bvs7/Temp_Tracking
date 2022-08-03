@@ -5,7 +5,7 @@
 
 #include "utility.h"
 
-#include "PipedStream.h"
+#include "PipedStream.h" // Buffered Streams library for virtual stream for commands
 
 #define DEBUG_BAUD_RATE 9600
 
