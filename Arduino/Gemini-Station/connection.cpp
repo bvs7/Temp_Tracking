@@ -15,8 +15,7 @@ SoftwareSerial Serial1(2,3); // RX, TX
 
 connection_settings_t conn_sett;
 
-WiFiEspClient wifi_client;
-PubSubClient mqtt_client(wifi_client);
+
 
 unsigned long reconnect_time_millis = 0;
 

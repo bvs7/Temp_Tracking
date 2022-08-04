@@ -1,26 +1,35 @@
 
 #include "devices.h"
 
+char state_string[4][10] = {
+  "OFF", "UNPOWERED", "OVERRIDE", "ON"
+};
+
 device::device(byte sense_pin, byte ctrl_pin, const char* device_name){
-  this->sense_pin = sense_pin;
-  this->ctrl_pin = ctrl_pin;
+  s = device_settings_t{
+    .device_name = NULL,
+    .sense_pin = sense_pin,
+    .ctrl_pin = ctrl_pin,
+    .device_state = OFF_
+  };
+  
   ctrl = LOW;
   strcpy(this->device_name, device_name);
 }
 
 char* device::state_str(){
-  return state_string[last_state];
+  return state_string[s.device_state];
 }
 
 void device::setup(){
 #ifdef DEBUG_
-  pinMode(sense_pin, INPUT_PULLUP);
+  pinMode(s.sense_pin, INPUT_PULLUP);
 #else
-  pinMode(sense_pin, INPUT);
+  pinMode(s.sense_pin, INPUT);
 #endif
-  pinMode(ctrl_pin, OUTPUT);
-  ctrl = last_state & CTRL_MASK;
-  digitalWrite(ctrl_pin, ctrl);
+  pinMode(s.ctrl_pin, OUTPUT);
+  ctrl = s.device_state & CTRL_MASK;
+  digitalWrite(s.ctrl_pin, ctrl);
 
   // Subscribe to the device's command topic
   mqtt_client.subscribe(strcat(CMD_STATION_TOPIC, device_name));
@@ -35,17 +44,17 @@ void device::setup(){
  */
 void device::loop(){
   // Check if control output has changed
-  if(ctrl != digitalRead(ctrl_pin)){
+  if(ctrl != digitalRead(s.ctrl_pin)){
     // control output has changed, update it
-    digitalWrite(ctrl_pin, ctrl);
+    digitalWrite(s.ctrl_pin, ctrl);
     return;
   }
   // Check if state has changed
   state state_ = static_cast<state>(
-    digitalRead(sense_pin) << 1 | digitalRead(ctrl_pin));
-  if(state_ != last_state){
+    digitalRead(s.sense_pin) << 1 | digitalRead(s.ctrl_pin));
+  if(state_ != s.device_state){
     // print output to command_internal
-    Serial.print(device_name);
+    Serial.print(s.device_name);
     Serial.print(" ");
     Serial.print(state_string[state_]);
     Serial.flush();
@@ -55,7 +64,7 @@ void device::loop(){
       state_string[state_]
     );
 
-    last_state = state_;
+    s.device_state = state_;
   }
 }
 

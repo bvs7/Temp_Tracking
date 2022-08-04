@@ -20,6 +20,26 @@ typedef struct connection_settings{
 } connection_settings_t;
 
 
+// Define a class connection with arrays for ssid, pass, server, and mqtt_id.
+// It has a wifi_client and mqtt_client instance.
+// It has a setup and loop function
+class connection{
+  
+  public:
+  connection_settings_t settings;
+  WiFiEspClient wifi_client;
+  PubSubClient mqtt_client;
+  
+  connection(const char* station_name);
+  
+  void save();
+  void load();
+  
+  void setup();
+  void loop();
+  
+};
+
 //bool wifi_connect();
 //bool mqtt_connect();
 // Use mqtt_client.setCallback() to set callback

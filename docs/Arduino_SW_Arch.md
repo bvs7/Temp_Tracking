@@ -1,54 +1,57 @@
 
-## Loop tasks:
-- Serial Commands
-  - get/set settings
-  - control device state
-  - get device (status)
-  - reset?
-- Mqtt handling
-- Poll sense pins for changes
+## Breakdown of data
 
-## Global data:
+- Station
+  - mqtt communication
+    - (wifi, mqtt publish handle, mqtt subscription callback)
+    - ssid, pass, server, mqtt_id
+  - devices
+    - Control pin
+    - Sense pin
+    - State (OFF, UNPOWERED, OVERRIDE, ON)
+    - has a name and a type of device (and an id?)
+  - sensors (soil moisture, temp, light, distance)
+    - Analog input
 
+## Types of actions
 
-## Modules:
-- Main
-  - Setup
-    - Subscribe to topics
-  - Loop
-    - Poll sense pins
-- Connection
-  - setup
-    - Initiate Serial1
-  - loop Manages mqtt connection
-    - reconnect
-    - callback (recieve mqtt message)
-  - connection settings can be written and reset (to defaults?)
-  - puts/gets settings to/from EEPROM
+- Change setting
+  - station name
   - connection settings
-    - wifi ssid
-    - wifi password
-    - mqtt server address
-    - mqtt server port?
-    - mqtt client id
-  - topics can be published to.
-- SerialCommands
-  - Only for debug/settings setup
-  - setup
-    - Initial Serial
-  - loop
-    - handle serial commands
+  - device ctrl setting (has specific topics)
+- Poll devices
+  - update state -> report
+  - heartbeat (MQTT?)
 
+## Access Points
 
-## Connection:
+- Serial Debug
+  - echo/liveness
+  - [setting] [value] : set a setting
+  - [setting] : get a setting
+  - test_mqtt [topic] [payload] : test a mqtt injection
+  - status : report all settings
+- MQTT
+  - station topic
+    - same commands as serial debug
+  - device topic
+    - like a setting command
 
-Setup
+`cmd/irrigation/[station]/[device]`
 
-Loop
+`data/irrigation/[station]/[device]`
 
-mqtt_on_connect:
----
-When MQTT connection is made, subscribe to a list of topics?
+`error/irrigation/[station]`
 
+settings struct...
 
-
+- station name
+- connection settings
+  - ssid
+  - pass
+  - server
+  - mqtt_id
+- device[5]
+  - ctrl_pin
+  - sense_pin
+  - state

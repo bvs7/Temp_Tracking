@@ -13,6 +13,14 @@
 				"clientId": "vsmqtt_client"
 			}
 		],
-		"arduino.path": "C:\\Program Files (x86)\\Arduino"
+		"arduino.path": "C:\\Program Files (x86)\\Arduino",
+		"C_Cpp.default.forcedInclude": [
+			"C:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\cores\\arduino\\**"
+		],
+		"C_Cpp.default.includePath": [
+			"C:\\Program Files (x86)\\Arduino\\libraries\\**",
+			"C:\\Users\\Brian\\Documents\\Arduino\\libraries\\**"
+		],
+		"C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google, IndentWidth: 4, ColumnLimit: 80}"
 	}
 }
