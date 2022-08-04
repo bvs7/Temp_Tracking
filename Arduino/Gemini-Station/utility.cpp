@@ -1,5 +1,7 @@
 #include "utility.h"
 
+#define LED_PIN 12//LED_BUILTIN
+
 #define MORSE_UNIT_MILLIS 70
 
 char state_string[4][10] = {
@@ -7,16 +9,16 @@ char state_string[4][10] = {
 };
 
 void dot(){
-  digitalWrite(LED_BUILTIN, HIGH);
+  digitalWrite(LED_PIN, HIGH);
   delay(MORSE_UNIT_MILLIS);
-  digitalWrite(LED_BUILTIN, LOW);
+  digitalWrite(LED_PIN, LOW);
   delay(MORSE_UNIT_MILLIS);
 }
 
 void dash(){
-  digitalWrite(LED_BUILTIN, HIGH);
+  digitalWrite(LED_PIN, HIGH);
   delay(MORSE_UNIT_MILLIS * 3);
-  digitalWrite(LED_BUILTIN, LOW);
+  digitalWrite(LED_PIN, LOW);
   delay(MORSE_UNIT_MILLIS);
 }
 
@@ -25,5 +27,5 @@ void space(){
 }
 
 void util_setup(){
-  pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(LED_PIN, OUTPUT);
 }

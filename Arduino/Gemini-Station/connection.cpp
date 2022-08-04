@@ -119,6 +119,32 @@ void connection_loop(){
       reconnect_time_millis = millis() + 60000;
     }
   }
+}
 
+char * connection_get_setting(const char * setting){
+  if(strcmp(setting, "ssid") == 0){
+    return conn_sett.ssid;
+  }else if(strcmp(setting, "pass") == 0){
+    return conn_sett.pass;
+  }else if(strcmp(setting, "server") == 0){
+    return conn_sett.server;
+  }else if(strcmp(setting, "mqtt_id") == 0){
+    return conn_sett.mqtt_id;
+  }
+  return NULL;
+}
 
+bool connection_set_setting(const char * setting, const char * value){
+  if(strcmp(setting, "ssid") == 0){
+    strcpy(conn_sett.ssid, value);
+  }else if(strcmp(setting, "pass") == 0){
+    strcpy(conn_sett.pass, value);
+  }else if(strcmp(setting, "server") == 0){
+    strcpy(conn_sett.server, value);
+  }else if(strcmp(setting, "mqtt_id") == 0){
+    strcpy(conn_sett.mqtt_id, value);
+  }else{
+    return false;
+  }
+  return true;
 }

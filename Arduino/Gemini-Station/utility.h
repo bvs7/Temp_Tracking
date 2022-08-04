@@ -1,6 +1,9 @@
 #ifndef UTILITY_H_
 #define UTILITY_H_
 
+#define LOG(x) Serial.print(x)
+
+
 #include "Arduino.h"
 
 #define CMD_STATION_TOPIC "cmd/irrigation/garden_station0"

@@ -17,6 +17,7 @@ class device{
   device(byte sense_pin, byte ctrl_pin, const char* device_name);
   void setup();
   void loop();
+  char *state_str();
   void set_ctrl(byte ctrl);
   bool check_name(const char* name, unsigned int length);
 };

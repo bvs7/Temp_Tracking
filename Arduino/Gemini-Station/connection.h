@@ -20,17 +20,18 @@ typedef struct connection_settings{
 } connection_settings_t;
 
 
-bool wifi_connect();
-bool mqtt_connect();
+//bool wifi_connect();
+//bool mqtt_connect();
 // Use mqtt_client.setCallback() to set callback
-bool reconnect();
-void save_conn();
+//bool reconnect();
+//void save_conn();
 
 void connection_setup();
 void connection_loop();
 
-extern WiFiEspClient wifi_client;
+char * connection_get_setting(const char * setting);
+bool connection_set_setting(const char * setting, const char * value);
+
 extern PubSubClient mqtt_client;
-extern connection_settings_t conn_sett;
 
 #endif

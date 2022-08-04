@@ -8,6 +8,10 @@ device::device(byte sense_pin, byte ctrl_pin, const char* device_name){
   strcpy(this->device_name, device_name);
 }
 
+char* device::state_str(){
+  return state_string[last_state];
+}
+
 void device::setup(){
 #ifdef DEBUG_
   pinMode(sense_pin, INPUT_PULLUP);
@@ -41,10 +45,10 @@ void device::loop(){
     digitalRead(sense_pin) << 1 | digitalRead(ctrl_pin));
   if(state_ != last_state){
     // print output to command_internal
-    command_internal.print(device_name);
-    command_internal.print(" ");
-    command_internal.print(state_string[state_]);
-
+    Serial.print(device_name);
+    Serial.print(" ");
+    Serial.print(state_string[state_]);
+    Serial.flush();
     // publish output
     mqtt_client.publish(
       strcat(DATA_STATION_TOPIC, device_name), 
@@ -56,6 +60,11 @@ void device::loop(){
 }
 
 void device::set_ctrl(byte ctrl_value){
+  LOG("set ctrl ");
+  LOG(device_name);
+  LOG(" to ");
+  LOG(ctrl_value);
+  LOG("\n");
   ctrl = ctrl_value != 0; // Flatten to 1 or 0
 }
 
