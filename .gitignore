@@ -138,3 +138,6 @@ data/*
 
 # vscode properties
 .vscode/*
+
+# Secret files
+*/secrets.h
