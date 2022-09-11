@@ -140,4 +140,4 @@ data/*
 .vscode/*
 
 # Secret files
-*/secrets.h
+*secrets.h

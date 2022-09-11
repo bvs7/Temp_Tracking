@@ -1,6 +1,8 @@
-#include "connection.h"
+#include "Arduino.h"
 
 #include "utility.h"
+#include "settings.h"
+#include "connection.h"
 
 #ifndef HAVE_HWSERIAL1
 #include "SoftwareSerial.h"
@@ -8,10 +10,12 @@ SoftwareSerial Serial1(2, 3);  // RX, TX
 #endif
 
 #define AT_BAUD_RATE 9600
-#define RECONNECT_DELAY_MILLIS 60000
+#define RECONNECT_DELAY_MILLIS 60000 // 60 seconds
 
 bool disconnect_flag = false;
 unsigned long reconnect_time_millis = 0;
+
+connection_config conn; // Permanent copy of connection config
 
 WiFiEspClient wifi_client;
 PubSubClient mqtt_client(wifi_client);
@@ -22,7 +26,7 @@ PubSubClient mqtt_client(wifi_client);
 //     pass);
 // }
 
-byte wifi_connect(connection_settings *conn) {
+byte wifi_connect() {
     byte status = WiFi.status();
 
     switch (status) {
@@ -31,42 +35,40 @@ byte wifi_connect(connection_settings *conn) {
             WiFi.init(&Serial1);
             status = WiFi.status();
             if (status == WL_NO_SHIELD) {
-                ERROR("ESP8266 not found ", status);
+                // Error
                 break;
             }
-            INFO("ESP8266 found", "");
             delay(100);
         case WL_IDLE_STATUS:
         case WL_CONNECT_FAILED:
-            INFO("Connecting to WiFi network ", conn->ssid);
             delay(100);
             int attempts = 0;
             while (status != WL_CONNECTED) {
                 delay(100);
-                status = WiFi.begin(conn->ssid, conn->password);
+                status = WiFi.begin(conn.ssid, conn.password);
                 delay(1000);
                 attempts++;
                 if (attempts >= 10) {
-                    ERROR("Could not connect to WiFi network ", conn->ssid);
+                    Serial.println("ERROR:");
+                    Serial.println("WiFi");
                     break;
                 }
             }
-            if(status == WL_CONNECTED){
-                INFO("Successfully connected to WiFi network ", conn->ssid);
+            if(WiFi.status() == WL_CONNECTED){
+              dash(); space(); dash(); dash();
             }
             break;
         case WL_CONNECTED:
-            INFO("Already connected to WiFi network ", conn->ssid);
             break;
     }
     return status;
 }
 
-int8_t mqtt_connect(connection_settings *conn) {
+int8_t mqtt_connect() {
     switch (mqtt_client.state()) {
         case MQTT_CONNECTION_LOST:
         case MQTT_CONNECT_FAILED:
-            byte wifi_state = wifi_connect(conn);
+            byte wifi_state = wifi_connect();
             if (wifi_state != WL_CONNECTED) {
                 break;
             }
@@ -77,40 +79,32 @@ int8_t mqtt_connect(connection_settings *conn) {
         case MQTT_CONNECT_UNAVAILABLE:
         case MQTT_CONNECT_BAD_CREDENTIALS:
         case MQTT_CONNECT_UNAUTHORIZED:
-            mqtt_client.setServer(conn->mqtt_server, conn->mqtt_port);
-            INFO("Connecting to MQTT", "");
-            INFO("  Server: ", conn->mqtt_server);
-            INFO("  Port: ", conn->mqtt_port);
-            INFO("  ID: ", conn->mqtt_id);
-            mqtt_client.connect(conn->mqtt_id);
+            mqtt_client.setServer(conn.mqtt_server, conn.mqtt_port);
+            mqtt_client.connect(conn.station_name);
             int8_t mqtt_state = mqtt_client.state();
             if (mqtt_state != MQTT_CONNECTED) {
-                INFO("Failed to connect to MQTT: ", mqtt_state);
+                Serial.println("ERROR:");
+                Serial.println("MQTT");
                 break;
             }
+            dot(); dot(); dot();
         case MQTT_CONNECTED:
-            INFO("Successfully connected to MQTT server ", conn->mqtt_server);
+            INFO("MQTT connected", "");
             break;
     }
 }
 
-bool publish(const char *topic, const char *payload, bool retain) {
-    if (mqtt_client.publish(topic, payload, retain)) {
-        INFO("Published to topic ", topic);
-        INFO("  Payload: ", payload);
-        return true;
-    } else {
-        ERROR("Failed to publish to topic ", topic);
-        return false;
-    }
-}
-
 bool publish_data(const char *topic_suffix, const char *payload, bool retain) {
-    return publish(strcat("data/irrigation/tank_station1", topic_suffix), payload, retain);
+    char topic[64];
+    snprintf(topic, 64, (DATA TOPIC_INFIX "%s/%s"), conn.station_name,
+             topic_suffix);
+    return mqtt_client.publish(topic, payload, retain);
 }
 
-bool publish_error(const char *message, bool retain) {
-    return publish("error/", message, retain);
+bool publish_log(const char *message, bool retain) {
+    char topic[64];
+    snprintf(topic, 64, (LOG TOPIC_INFIX "%s"), conn.station_name);
+    return mqtt_client.publish(topic, message, retain);
 }
 
 bool subscribe(const char *topic, int qos) {
@@ -118,7 +112,7 @@ bool subscribe(const char *topic, int qos) {
         INFO("Subscribed to topic ", topic);
         return true;
     } else {
-        ERROR("Failed to subscribe to topic ", topic);
+        // Error
         return false;
     }
 }
@@ -128,31 +122,41 @@ bool unsubscribe(const char *topic) {
         INFO("Unsubscribed from topic ", topic);
         return true;
     } else {
-        ERROR("Failed to unsubscribe from topic ", topic);
+        // Error
         return false;
     }
 }
 
-PubSubClient *setCallback(MQTT_CALLBACK_SIGNATURE) {
+PubSubClient *set_callback(MQTT_CALLBACK_SIGNATURE) {
     mqtt_client.setCallback(callback);
     return &mqtt_client;
 }
 
-void connection_setup(station_settings *station) {
-    Serial1.begin(AT_BAUD_RATE); // Down the road, get a 115200 baud rate
+void connection_setup(connection_config *c) {
+    // Copy once and use permanently. Reboot to change.
+    strcpy(conn.ssid, c->ssid);
+    strcpy(conn.password, c->password);
+    strcpy(conn.mqtt_server, c->mqtt_server);
+    strcpy(conn.station_name, c->station_name);
+    conn.mqtt_port = c->mqtt_port;
+
+    Serial1.begin(AT_BAUD_RATE);
 
     delay(100);
 
     WiFi.init(&Serial1);
-
-    byte wifi_status = wifi_connect(&(station->conn));
+    // Initial wifi connection
+    byte wifi_status = wifi_connect();
     if (wifi_status != WL_CONNECTED) {
+        // Error
         return;
     }
-    int8_t mqtt_status = mqtt_connect(&station->conn);
+    delay(100);
+    int8_t mqtt_status = mqtt_connect();
 }
 
-void connection_loop(station_settings *station) {
+void connection_loop() {
+
     if (!mqtt_client.loop()) {
         if (!disconnect_flag) {
             disconnect_flag = true;
@@ -160,7 +164,7 @@ void connection_loop(station_settings *station) {
         }
         if (millis() > reconnect_time_millis) {
             disconnect_flag = false;
-            mqtt_connect(&station->conn);
+            mqtt_connect();
         }
     }
 }

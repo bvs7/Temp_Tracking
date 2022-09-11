@@ -8,12 +8,12 @@
 #include "settings.h"
 
 bool publish_data(const char *topic_suffix, const char *message, bool retain);
-bool publish_error(const char *message, bool retain);
+bool publish_log(const char *message, bool retain);
 bool subscribe(const char *topic, int qos);
 bool unsubscribe(const char *topic);
-PubSubClient *setCallback(MQTT_CALLBACK_SIGNATURE);
+PubSubClient *set_callback(MQTT_CALLBACK_SIGNATURE);
 
-void connection_setup(station_settings *station);
-void connection_loop(station_settings *station);
+void connection_setup(connection_config *conn);
+void connection_loop();
 
 #endif // CONNECTION_H_

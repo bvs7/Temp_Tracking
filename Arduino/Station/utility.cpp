@@ -1,10 +1,9 @@
+#include "Arduino.h"
 #include "utility.h"
 
-#define LED_PIN 12//LED_BUILTIN
+#define LED_PIN LED_BUILTIN
 
 #define MORSE_UNIT_MILLIS 70
-
-
 
 void dot(){
   digitalWrite(LED_PIN, HIGH);
