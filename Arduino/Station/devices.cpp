@@ -74,6 +74,7 @@ void update_a_device(uint8_t idx) {
 }
 
 void p_device_setup(uint8_t idx) {
+    VERBOSE("Setting up P", idx);
     byte sense = get_byte(P_SENSE(idx));
     if (sense == UNUSED_PIN) {
         return;
@@ -102,10 +103,11 @@ void a_device_setup(uint8_t idx) {
 }
 
 void devices_setup() {
-    DEBUG2("Devices setup", "");
+    VERBOSE("Devices setup", "");
     // Reset pin conflicts
     for (uint8_t i = 0; i < NUM_P_DEVICES; i++) {
         p_device_setup(i);
+        delay(100);
     }
 
     for (uint8_t i = 0; i < NUM_A_DEVICES; i++) {
@@ -116,11 +118,11 @@ void devices_setup() {
 }
 
 void devices_loop() {
-    DEBUG2("Devices loop", "");
+    VERBOSE2("Devices loop", "");
     unsigned long current_millis = millis();
     if (current_millis - last_tick_millis > SEC) {
         seconds += 1;
-        INFO2("Tick", "");
+        VERBOSE("Tick", "");
         dot();
         int a_poll_interval = get_int(A_POLL_INTERVAL);
         if (seconds % a_poll_interval == 0) {

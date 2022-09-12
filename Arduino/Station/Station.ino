@@ -33,7 +33,6 @@ void mqtt_callback(char *topic, byte *payload, unsigned int length) {
 }
 
 void serial_callback() {
-    DEBUG2("Serial callback", "");
     char input_buffer[BUFFER_SIZE] = {0};
     SerialIn.readBytesUntil('\n', input_buffer, BUFFER_SIZE);
     return root_handle(input_buffer, &Serial);
@@ -41,17 +40,16 @@ void serial_callback() {
 
 void setup() {
     Serial.begin(9600);
-    DEBUG("Starting...", "");
+    DEBUG("Start", "");
 
     util_setup();
 
     byte valid = get_byte(VALID);
     if (valid != EEPROM_SETTINGS_VALID) {
         ERROR("EEPROM not valid", "");
-        return;
+        while(1);
     }
     station_name = get_str(STATION_NAME, SETTING_LEN);
-
     connection_setup();
     set_callback(mqtt_callback);
 
@@ -84,9 +82,9 @@ void setup() {
 
 void loop() {
     // clang-format off
-    {dash(); dash(); dash(); space();}
-    {dash(); dot();  dash(); space();}
-    {space(); space(); space();}
+    {dash(); dash(); dash(); space();} // O
+    {dash(); dot();  dash(); space();} // K
+    {space(); space(); space();} // _
     // clang-format on
 }
 #endif

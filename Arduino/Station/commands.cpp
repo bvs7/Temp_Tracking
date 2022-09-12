@@ -7,6 +7,8 @@
 #include "settings.h"
 #include "utility.h"
 
+#define FILE_ "comm: "
+
 uint8_t pin_name_to_num(char *pin) {
     if (pin[0] == 'A') {
         return atoi(pin + 1) + 14;
@@ -32,12 +34,12 @@ void mqtt_handle(char *topic, byte *payload, unsigned int length,
     char *saveptr = NULL;
     char *mode = strtok_r(topic, "/", &saveptr);
     if (mode == NULL || strcmp(mode, CMD) != 0) {
-        ERROR("Invalid topic: ", mode == NULL ? "NULL" : mode);
+        ERR(FILE_, __LINE__); //ERROR("Invalid topic: ", mode == NULL ? "NULL" : mode);
         return;
     }
     char *name = strtok_r(NULL, "/", &saveptr);
     if (name == NULL || strcmp(name, station_name) != 0) {
-        ERROR("Invalid name: ", name == NULL ? "NULL" : name);
+        ERR(FILE_, __LINE__); //ERROR("Invalid name: ", name == NULL ? "NULL" : name);
         return;
     }
     payload[length] = '\0';
@@ -50,19 +52,19 @@ void mqtt_handle(char *topic, byte *payload, unsigned int length,
         if (device_name[0] == 'P') {
             uint8_t p_id = device_name[1] - '0';
             if (p_id >= NUM_P_DEVICES) {
-                ERROR("Invalid P device #: ", device_name);
+                ERR(FILE_, __LINE__); //ERROR("Invalid P device #: ", device_name);
                 return;
             }
             p_device_handle(p_id, device_name, (char **)&payload, resp);
         } else if (device_name[0] == 'A') {
             uint8_t a_id = device_name[1] - '0';
             if (a_id >= NUM_A_DEVICES) {
-                ERROR("Invalid A device #: ", device_name);
+                ERR(FILE_, __LINE__); //ERROR("Invalid A device #: ", device_name);
                 return;
             }
             a_device_handle(a_id, device_name, (char **)&payload, resp);
         } else {
-            ERROR("Invalid device name: ", device_name);
+            ERR(FILE_, __LINE__); //ERROR("Invalid device name: ", device_name);
             return;
         }
     }
@@ -85,7 +87,7 @@ void root_handle(char *input, Stream *resp) {
     } else if (strcmp(cmd, "mqtt") == 0) {
         char *topic = strtok_r(NULL, " ", &saveptr);
         if (topic == NULL) {
-            ERROR("No topic specified", "");
+            ERR(FILE_, __LINE__); //ERROR("No topic specified", "");
             return;
         }
         byte *payload = (byte *)strtok_r(NULL, "\0", &saveptr);
@@ -96,7 +98,7 @@ void root_handle(char *input, Stream *resp) {
     } else if (cmd[0] == 'P') {
         uint8_t id = cmd[1] - '0';
         if (id < 0 || id >= NUM_P_DEVICES) {
-            ERROR("Invalid P ID", "");
+            ERR(FILE_, __LINE__); //ERROR("Invalid P ID", "");
             return;
         } else {
             p_device_handle(id, cmd, &saveptr, resp);
@@ -104,13 +106,13 @@ void root_handle(char *input, Stream *resp) {
     } else if (cmd[0] == 'A') {
         uint8_t id = cmd[1] - '0';
         if (id < 0 || id >= NUM_A_DEVICES) {
-            ERROR("Invalid A ID", "");
+            ERR(FILE_, __LINE__); //ERROR("Invalid A ID", "");
             return;
         } else {
             a_device_handle(id, cmd, &saveptr, resp);
         }
     } else {
-        ERROR("Invalid command", cmd);
+        resp->println(" ???");
     }
 }
 
