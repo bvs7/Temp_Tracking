@@ -1,269 +1,269 @@
-#include "Arduino.h"
 
-#include "utility.h"
-#include "settings.h"
 #include "commands.h"
+
+#include "Arduino.h"
 #include "connection.h"
+#include "devices.h"
+#include "settings.h"
+#include "utility.h"
 
-#include <Adafruit_SleepyDog.h>
-
-station_settings *sett;
-
-void (*reset) (void) = 0;
-
-uint8_t pin_name_to_num(char *pin){
-    if(pin[0] == 'A'){
-        return atoi(pin+1) + 14;
-    } else if(pin[0] == '-'){
+uint8_t pin_name_to_num(char *pin) {
+    if (pin[0] == 'A') {
+        return atoi(pin + 1) + 14;
+    } else if (pin[0] == '-') {
         return UNUSED_PIN;
     } else {
         return atoi(pin);
     }
 }
 
-void pin_num_to_name(uint8_t pin, char *name){
-    if(pin > 13){
+void pin_num_to_name(uint8_t pin, char *name) {
+    if (pin > 13) {
         sprintf(name, "A%d", pin - 14);
-    } else if(pin == UNUSED_PIN){
+    } else if (pin == UNUSED_PIN) {
         sprintf(name, "-");
     } else {
         sprintf(name, "%d", pin);
     }
 }
 
-char config_names[][13] = 
-    {"ssid", "password", "mqtt_server", "station_name", "mqtt_port"};
+void mqtt_handle(char *topic, byte *payload, unsigned int length,
+                 Stream *resp) {
+    char *saveptr = NULL;
+    char *mode = strtok_r(topic, "/", &saveptr);
+    if (mode == NULL || strcmp(mode, CMD) != 0) {
+        ERROR("Invalid topic: ", mode == NULL ? "NULL" : mode);
+        return;
+    }
+    char *name = strtok_r(NULL, "/", &saveptr);
+    if (name == NULL || strcmp(name, station_name) != 0) {
+        ERROR("Invalid name: ", name == NULL ? "NULL" : name);
+        return;
+    }
+    payload[length] = '\0';
+    char *device_name = strtok_r(NULL, "/", &saveptr);
+    if (device_name == NULL) {
+        // Station command
+        root_handle((char *)payload, resp);
+    } else {
+        // Device command
+        if (device_name[0] == 'P') {
+            uint8_t p_id = device_name[1] - '0';
+            if (p_id >= NUM_P_DEVICES) {
+                ERROR("Invalid P device #: ", device_name);
+                return;
+            }
+            p_device_handle(p_id, device_name, (char **)&payload, resp);
+        } else if (device_name[0] == 'A') {
+            uint8_t a_id = device_name[1] - '0';
+            if (a_id >= NUM_A_DEVICES) {
+                ERROR("Invalid A device #: ", device_name);
+                return;
+            }
+            a_device_handle(a_id, device_name, (char **)&payload, resp);
+        } else {
+            ERROR("Invalid device name: ", device_name);
+            return;
+        }
+    }
+}
 
-void root_handle(char *input, Stream *resp){
-    resp->print("#");
-    char *saveptr;
+void root_handle(char *input, Stream *resp) {
+    char *saveptr = NULL;
     char *cmd = strtok_r(input, " ", &saveptr);
-    Serial.println(cmd);
-    if(cmd == NULL){
+    if (cmd == NULL) {
         // Empty? What to do?
         return;
     }
-    if(strcmp(cmd, "hello") == 0){
+    if (strcmp(cmd, "hello") == 0) {
         resp->println("Hello!");
         return;
-    }else if(strcmp(cmd, "reboot") == 0){
+    } else if (strcmp(cmd, "reboot") == 0) {
         // TODO: Figure out watchdog timer
-        reset();
-        delay(5000);
-        resp->println("Rebooting...");
-        Watchdog.enable(2000);
+        resp->println("Can't reboot...");
         return;
+    } else if (strcmp(cmd, "mqtt") == 0) {
+        char *topic = strtok_r(NULL, " ", &saveptr);
+        if (topic == NULL) {
+            ERROR("No topic specified", "");
+            return;
+        }
+        byte *payload = (byte *)strtok_r(NULL, "\0", &saveptr);
+        unsigned int length = strlen((char *)payload);
+        mqtt_handle(topic, payload, length, resp);
+    } else if (connection_handle(cmd, &saveptr, resp)) {
+        return;
+    } else if (cmd[0] == 'P') {
+        uint8_t id = cmd[1] - '0';
+        if (id < 0 || id >= NUM_P_DEVICES) {
+            ERROR("Invalid P ID", "");
+            return;
+        } else {
+            p_device_handle(id, cmd, &saveptr, resp);
+        }
+    } else if (cmd[0] == 'A') {
+        uint8_t id = cmd[1] - '0';
+        if (id < 0 || id >= NUM_A_DEVICES) {
+            ERROR("Invalid A ID", "");
+            return;
+        } else {
+            a_device_handle(id, cmd, &saveptr, resp);
+        }
+    } else {
+        ERROR("Invalid command", cmd);
     }
-    for(int i = 0; i < 5; i++){
-        if(strcmp(config_names[i], cmd) == 0){
-            char *value = strtok_r(NULL, " ", &saveptr);
-            if(value == NULL){ // Read config value
+}
+
+bool connection_handle(char *cmd, char **saveptr, Stream *resp) {
+    char config_names[][13] = {"station_name", "ssid", "password",
+                               "mqtt_server"};
+    for (int i = 0; i < 4; i++) {
+        if (strcmp(config_names[i], cmd) == 0) {
+            char *value = strtok_r(NULL, " ", saveptr);
+            if (value == NULL) {  // Read config value
                 resp->print(config_names[i]);
                 resp->print(": ");
-                switch(i){
-                  case 0: resp->println(sett->config.connection.ssid); break;
-                  case 1: resp->println(sett->config.connection.password); break;
-                  case 2: resp->println(sett->config.connection.mqtt_server); break;
-                  case 3: resp->println(sett->config.connection.station_name); break;
-                  case 4: resp->println(sett->config.connection.mqtt_port); break;
-                }
-                return;
+                char *result =
+                    get_str(STATION_NAME + i * SETTING_LEN, SETTING_LEN);
+                resp->println(result);
+                free(result);
+                return true;
+            } else {  // Write config value
+                resp->print(config_names[i]);
+                resp->print(" -> ");
+                set_str(STATION_NAME + i * SETTING_LEN, value, SETTING_LEN);
+                resp->println(value);
+                return true;
             }
-            // write config value
-            char *dest;
-            switch(i){
-            case 0: dest = sett->config.connection.ssid; break;
-            case 1: dest = sett->config.connection.password; break;
-            case 2: dest = sett->config.connection.mqtt_server; break;
-            case 3: dest = sett->config.connection.station_name; break;
-            }
-            resp->print(config_names[i]);
+        }
+    }
+    if (strcmp("mqtt_port", cmd) == 0) {
+        char *value = strtok_r(NULL, " ", saveptr);
+        if (value == NULL) {  // Read config value
+            resp->print("mqtt_port");
+            resp->print(": ");
+            resp->println(get_int(MQTT_PORT));
+            return true;
+        } else {  // Write config value
+            resp->print("mqtt_port");
             resp->print(" -> ");
-            if(i == 4){
-                sett->config.connection.mqtt_port = atoi(value);
-                resp->println(sett->config.connection.mqtt_port);
-            }else{
-                strncpy(dest, value, SETTING_LEN-1);
-                resp->println(dest);
-            }
-            save_config(&sett->config);
-            return;
+            set_int(MQTT_PORT, atoi(value));
+            resp->println(get_int(MQTT_PORT));
+            return true;
         }
     }
-    if(cmd[0] == 'P'){
-        int id = cmd[1] - '0';
-        if(id < 0 || id >= NUM_P_DEVICES){
-            // Error
-            resp->println("Invalid device ID");
-            return;
-        }else{
-            p_device_config_handle(id, cmd, &saveptr, resp);
-        }
-    }else if(cmd[0] == 'A'){
-        int id = cmd[1] - '0';
-        if(id < 0 || id >= NUM_A_DEVICES){
-            // Error
-            resp->println("Invalid device ID");
-            return;
-        }else{
-            a_device_config_handle(id, cmd, &saveptr, resp);
-        }
-    }
+    return false;
 }
 
-void p_device_config_handle(uint8_t idx, char *cmd, char **saveptr, Stream *resp){
-    p_device_config *P = &sett->config.P[idx];
+void p_device_handle(uint8_t idx, char *device, char **saveptr, Stream *resp) {
     char *subcmd = strtok_r(NULL, " ", saveptr);
-    if(subcmd == NULL){
-        resp->print(cmd);
+    if (subcmd == NULL) {
+        resp->print(device);
         resp->print(": sense=");
-        resp->print(P->sense);
+        resp->print(get_byte(P_SENSE(idx)));
         resp->print(", ctrl=");
-        resp->print(P->ctrl);
-        resp->print(", name=");
-        resp->println(P->name);
+        resp->print(get_byte(P_CTRL(idx)));
+        resp->print(", state=");
+        resp->println(state_str[p_states[idx]]);
+        p_states[idx] |= P_REQUEST_FLAG;
         return;
     }
     char *value = strtok_r(NULL, " ", saveptr);
-    if(strcmp(subcmd, "name") == 0){
-        if(value == NULL){
-            resp->print(cmd);
-            resp->print(".name: ");
-            resp->println(P->name);
-            return;
-        }
-        strncpy(P->name, value, NAME_LEN-1);
-        resp->print(cmd);
-        resp->print(".name -> ");
-        resp->println(P->name);
-    }else if(strcmp(subcmd, "sense") == 0){
-        if(value == NULL){
-            resp->print(cmd);
+    resp->print(device);
+    if (strcmp(subcmd, "state") == 0) {
+        resp->print(".state: ");
+        resp->println(state_str[p_states[idx]]);
+        p_states[idx] |= P_REQUEST_FLAG;
+    } else if (strcmp(subcmd, "sense") == 0) {
+        if (value == NULL) {
             resp->print(".sense: ");
-            char name[4];
-            pin_num_to_name(P->sense, name);
-            resp->println(name);
-            return;
+            resp->println(get_byte(P_SENSE(idx)));
+        } else {
+            set_byte(P_SENSE(idx), pin_name_to_num(value));
+            resp->print(".sense -> ");
+            resp->println(get_byte(P_SENSE(idx)));
+            devices_setup();
         }
-        P->sense = pin_name_to_num(value);
-        resp->print(cmd);
-        resp->print(".sense -> ");
-        char name[4];
-        pin_num_to_name(P->sense, name);
-        resp->println(name);
-    }else if(strcmp(subcmd, "ctrl") == 0){
-        if(value == NULL){
-            resp->print(cmd);
+    } else if (strcmp(subcmd, "ctrl") == 0) {
+        if (value == NULL) {
             resp->print(".ctrl: ");
-            char name[4];
-            pin_num_to_name(P->ctrl, name);
-            resp->println(name);
-            return;
+            resp->println(get_byte(P_CTRL(idx)));
+        } else {
+            digitalWrite(get_byte(P_CTRL(idx)), LOW);
+            set_byte(P_CTRL(idx), pin_name_to_num(value));
+            resp->print(".ctrl -> ");
+            resp->println(get_byte(P_CTRL(idx)));
+            devices_setup();
         }
-        P->ctrl = pin_name_to_num(value);
-        resp->print(cmd);
-        resp->print(".ctrl -> ");
-        char name[4];
-        pin_num_to_name(P->ctrl, name);
-        resp->println(name);
-    }else{
-        // invalid subcommand
+    } else if (strcmp(subcmd, "ON") == 0) {
+        p_states[idx] |= CTRL_MASK;
+        p_states[idx] |= P_REQUEST_FLAG;
+        p_device_set(idx, HIGH);
+        resp->println(" -> ON");
+    } else if (strcmp(subcmd, "OFF") == 0) {
+        p_states[idx] &= ~CTRL_MASK;
+        p_states[idx] |= P_REQUEST_FLAG;
+        p_device_set(idx, LOW);
+        resp->println(" -> OFF");
+    } else {
+        resp->println(" ???");
     }
-    save_config(&sett->config);
 }
 
-void a_device_config_handle(uint8_t id, char *cmd, char **saveptr, Stream *resp){
-    a_device_config *A = &sett->config.A[id];
+void a_device_config_handle(uint8_t idx, char *device, char **saveptr,
+                            Stream *resp) {
     char *subcmd = strtok_r(NULL, " ", saveptr);
-    if(subcmd == NULL){
-        resp->print(cmd);
+    if (subcmd == NULL) {
+        resp->print(device);
         resp->print(": input=");
-        resp->print(A->input);
+        resp->print(get_byte(A_INPUT(idx)));
         resp->print(", trig=");
-        resp->print(A->trig);
-        resp->print(", name=");
-        resp->println(A->name);
+        resp->print(get_byte(A_TRIG(idx)));
+        resp->print(", value=");
+        resp->println(a_values[idx]);
+        a_values[idx] = A_REQUEST_FLAG;
         return;
     }
+    resp->print(device);
     char *value = strtok_r(NULL, " ", saveptr);
-    if(strcmp(subcmd, "name") == 0){
-        if(value == NULL){
-            resp->print(cmd);
-            resp->print(".name: ");
-            resp->println(A->name);
-            return;
-        }
-        strncpy(A->name, value, NAME_LEN-1);
-        resp->print(cmd);
-        resp->print(".name -> ");
-        resp->println(A->name);
-    }else if(strcmp(subcmd, "input") == 0){
+    if (strcmp(subcmd, "value") == 0) {
+        resp->print(".value: ");
+        resp->println(a_values[idx]);
+        a_values[idx] = A_REQUEST_FLAG;
+    } else if (strcmp(subcmd, "input") == 0) {
         char *value = strtok(NULL, " ");
-        if(value == NULL){
-            resp->print(cmd);
+        if (value == NULL) {
             resp->print(".input: ");
             char name[4];
-            pin_num_to_name(A->input, name);
+            pin_num_to_name(get_byte(A_INPUT(idx)), name);
             resp->println(name);
-            return;
+        } else {
+            set_byte(A_INPUT(idx), pin_name_to_num(value));
+            resp->print(".input -> ");
+            char name[4];
+            pin_num_to_name(get_byte(A_INPUT(idx)), name);
+            resp->println(name);
+            devices_setup();
         }
-        A->input = pin_name_to_num(value);
-        resp->print(cmd);
-        resp->print(".input -> ");
-        char name[4];
-        pin_num_to_name(A->input, name);
-        resp->println(name);
-    }else if(strcmp(subcmd, "trig") == 0){
-        char *value = strtok(NULL, " ");
-        if(value == NULL){
-            resp->print(cmd);
+    } else if (strcmp(subcmd, "trig") == 0) {
+        if (value == NULL) {
             resp->print(".trig: ");
             char name[4];
-            pin_num_to_name(A->trig, name);
+            pin_num_to_name(get_byte(A_TRIG(idx)), name);
             resp->println(name);
-            return;
+        } else {
+            set_byte(A_TRIG(idx), pin_name_to_num(value));
+            resp->print(".trig -> ");
+            char name[4];
+            pin_num_to_name(get_byte(A_TRIG(idx)), name);
+            resp->println(name);
+            devices_setup();
         }
-        A->trig = pin_name_to_num(value);
-        resp->print(cmd);
-        resp->print(".trig -> ");
-        char name[4];
-        pin_num_to_name(A->trig, name);
-        resp->println(name);
-    }else{
-        // invalid subcommand
-        return;
-    }
-    save_config(&sett->config);
-}
-
-void p_device_state_handle(uint8_t id, char *cmd, char **saveptr, Stream *resp){
-    device_state *state = &sett->state.P_state[id];
-    char *subcmd = strtok_r(NULL, " ", saveptr);
-    if(subcmd == NULL){
-        // Prompt data publish
-        *state |= P_REQUEST_FLAG;
-        resp->print(cmd);
-        resp->print(": ");
-        resp->print(state_str[*state]);
-    }else{
-        bool set = false;
-        set = set || (strcmp(subcmd, "ON") == 0);
-        digitalWrite(sett->config.P[id].ctrl, set);
-        resp->print(cmd);
-        resp->print(" -> ");
-        resp->println(set ? "ON" : "OFF");
+    } else if (strcmp(subcmd, "UPDATE") == 0) {
+        a_values[idx] = A_REQUEST_FLAG;
+        resp->println(" -> UPDATE");
+    } else {
+        resp->println(" ???");
     }
 }
 
-void a_device_state_handle(uint8_t id, char *cmd, char **saveptr, Stream *resp){
-    int *value = &sett->state.A_value[id];
-    resp->print(cmd);
-    resp->print(": ");
-    resp->println(*value);
-    *value = A_REQUEST_FLAG;
-}
-
-
-void commands_setup(station_settings *s){
-    sett = s;
-}

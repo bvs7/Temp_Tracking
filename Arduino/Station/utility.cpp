@@ -1,28 +1,25 @@
-#include "Arduino.h"
 #include "utility.h"
+
+#include "Arduino.h"
 
 #define LED_PIN LED_BUILTIN
 
-#define MORSE_UNIT_MILLIS 70
+#define MORSE_UNIT_MILLIS 100
 
-void dot(){
-  digitalWrite(LED_PIN, HIGH);
-  delay(MORSE_UNIT_MILLIS);
-  digitalWrite(LED_PIN, LOW);
-  delay(MORSE_UNIT_MILLIS);
+void dot() {
+    digitalWrite(LED_PIN, HIGH);
+    delay(MORSE_UNIT_MILLIS);
+    digitalWrite(LED_PIN, LOW);
+    delay(MORSE_UNIT_MILLIS);
 }
 
-void dash(){
-  digitalWrite(LED_PIN, HIGH);
-  delay(MORSE_UNIT_MILLIS * 3);
-  digitalWrite(LED_PIN, LOW);
-  delay(MORSE_UNIT_MILLIS);
+void dash() {
+    digitalWrite(LED_PIN, HIGH);
+    delay(MORSE_UNIT_MILLIS * 3);
+    digitalWrite(LED_PIN, LOW);
+    delay(MORSE_UNIT_MILLIS);
 }
 
-void space(){
-  delay(MORSE_UNIT_MILLIS * 2);
-}
+void space() { delay(MORSE_UNIT_MILLIS * 2); }
 
-void util_setup(){
-  pinMode(LED_PIN, OUTPUT);
-}
+void util_setup() { pinMode(LED_PIN, OUTPUT); }

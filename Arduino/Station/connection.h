@@ -13,7 +13,7 @@ bool subscribe(const char *topic, int qos);
 bool unsubscribe(const char *topic);
 PubSubClient *set_callback(MQTT_CALLBACK_SIGNATURE);
 
-void connection_setup(connection_config *conn);
+void connection_setup();
 void connection_loop();
 
-#endif // CONNECTION_H_
+#endif  // CONNECTION_H_
