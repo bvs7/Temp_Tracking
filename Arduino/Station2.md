@@ -39,6 +39,6 @@ Root commands are sent to the station mqtt topic `cmd/garden-station1` or someth
 
 device commands are sent to a device topic `cmd/garden-station1/P0`, or sent to root with `P0` command
 - ` ` read
-- `ON/OFF` set
-- `sense` `ctrl` set pin, used on reset
+- `ON/OFF` `UPDATE`
+- `sense` `ctrl` `state` read or set pin
 
