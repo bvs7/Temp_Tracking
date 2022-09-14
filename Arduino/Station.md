@@ -26,9 +26,9 @@ A command to the station as a whole:
 - `reboot` Responds `Rebooting...` and sets watchdog timer 2s
 - `sync` Resets seconds counter, synchronizing polling
 - `mqtt [topic] [payload]` Test MQTT message
-- `ssid/password/mqtt_server/mqtt_port/name/poll` Read Settings Value
+- `ssid/password/mqtt_server/mqtt_port/poll` Read Settings Value
     - `[value]` Set new Connection Value
-- `version` Read FW Version
+- `version/name` Read FW Version or station name
 - `[device_id]` Update device state, respond with `state`, `sense`, and `ctrl`
     - (p_device) `[ON/OFF]` Set control state, which will trigger device update
     - (p_device) `sense/ctrl` Read `sense/ctrl` pin

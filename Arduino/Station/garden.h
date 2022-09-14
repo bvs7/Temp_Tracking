@@ -1,6 +1,6 @@
 #include "settings.h"
 
-#define FW_VERSION_ "0.0.0"
+#define FW_VERSION_ "0.0.1"
 #define STATION_NAME_ "garden1"
 //                0  1  2  3           4
 byte p_sense[] = {5, 7, 9, UNUSED_PIN, UNUSED_PIN};

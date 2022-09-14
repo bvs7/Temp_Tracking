@@ -106,8 +106,8 @@ void mqtt_handle(char *topic, byte *payload, unsigned int length,
  * - "A[n]": device command"
  * - "sync": reset seconds counter
  * - "mqtt": test mqtt command
- * - "version": get firmware version
- * - "name/ssid/password/mqtt_server/mqtt_port/poll": get/set setting
+ * - "version/name": get firmware version or station name
+ * - "ssid/password/mqtt_server/mqtt_port/poll": get/set setting
  * - "reboot": reset the device
  *
  * @param input Input string command from Serial or MQTT
@@ -161,7 +161,7 @@ void root_handle(char *input, Stream *resp) {
 
 /**
  * @brief Handle a command for a named setting
- * 
+ *
  * @param sett Name of setting e.g. version/name/ssid/password/
  *              mqtt_server/mqtt_port/poll)
  * @param saveptr Pointer to remaining string after sett
@@ -171,8 +171,8 @@ void root_handle(char *input, Stream *resp) {
 bool settings_handle(char *sett, char **saveptr, Stream *resp) {
     // clang-format off
     char sett_names[][12] = {
-        "version", // Cannot set
-        "name", "ssid", "password", "mqtt_server", 
+        "version", "name", // Cannot set
+        "ssid", "password", "mqtt_server", 
         "mqtt_port", "poll" // int, not string
     };
     // clang-format on
@@ -181,24 +181,29 @@ bool settings_handle(char *sett, char **saveptr, Stream *resp) {
         if (strcmp(sett, sett_names[i]) == 0) {
             char *value = strtok_r(NULL, " ", saveptr);
             int addr = FW_VERSION + SETTING_LEN * i;
-            if (value == NULL) {  // Get
+            if (value == NULL) {
+                // Get
                 resp->print(sett);
                 resp->print(": ");
-                if (i > 4) {  // mqtt_port and poll are int
+                if (i > 4) {
+                    // mqtt_port and poll are int
                     resp->println(get_int(addr));
                 } else {
                     char *read = (char *)get_str(addr, SETTING_LEN);
                     resp->println(read);
                     free(read);
                 }
-            } else {           // Set
-                if (i == 0) {  // Cannot set fw version
-                    ERR(FILE_, __LINE__);  // ERROR("Cannot set fw version", "");
+            } else {
+                // Set
+                if (i <= 1) {
+                    // Cannot set fw version or name
+                    ERR(FILE_, __LINE__);  // ERROR("Cannot set ", sett);
                     return true;
                 }
                 resp->print(sett);
                 resp->print(" -> ");
-                if (i > 4) {  // mqtt_port and poll are int
+                if (i > 4) {
+                    // mqtt_port and poll are int
                     set_int(addr, atoi(value));
                     resp->println(get_int(addr));
                 } else {
@@ -216,7 +221,7 @@ bool settings_handle(char *sett, char **saveptr, Stream *resp) {
 
 /**
  * @brief Handle a command for a Port device
- * 
+ *
  * @param idx Index of device
  * @param device Name of device e.g. P0
  * @param saveptr Remaining command string
@@ -287,7 +292,7 @@ void p_device_handle(uint8_t idx, char *device, char **saveptr, Stream *resp) {
 
 /**
  * @brief Handle a command for a Sensor device
- * 
+ *
  * @param idx Index of device
  * @param device Name of device e.g. A0
  * @param saveptr Remaining command string

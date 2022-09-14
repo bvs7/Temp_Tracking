@@ -2,18 +2,19 @@
 #include "settings.h"
 
 // #define PROGRAMMING_MODE
-
 #ifndef PROGRAMMING_MODE
-
-#include "utility.h"
 
 #include "commands.h"
 #include "connection.h"
 #include "devices.h"
+#include "utility.h"
 
 // library includes
 #include <avr/wdt.h>
+
 #include "LoopbackStream.h"
+
+#define FW_VERSION_ "0.0.1"
 
 #define FILE_ "main: "
 
@@ -25,7 +26,7 @@ char state_str[8][10] = {
 
     "*DISABLED","*IDLE!", // request flag
     "*FORCED!", "*ENABLED",
-};// clang-format on
+};  // clang-format on
 
 char *station_name;
 
@@ -39,7 +40,7 @@ LoopbackStream MQTTOut(BUFFER_SIZE);
 
 /**
  * @brief Handle an mqtt message, MQTT_CALLBACK_SIGNATURE structure
- * 
+ *
  * @param topic mqtt topic, should be "cmd/<station_name>/[<device_name>]"
  * @param payload Either a root command or details for a device command
  */
@@ -55,8 +56,8 @@ void mqtt_callback(char *topic, byte *payload, unsigned int length) {
 void serial_callback() {
     char input_buffer[BUFFER_SIZE] = {0};
     int len = SerialIn.readBytesUntil('\n', input_buffer, BUFFER_SIZE);
-    if(len >= BUFFER_SIZE) {
-        ERR(FILE_, __LINE__); //ERROR("Serial input too long");
+    if (len >= BUFFER_SIZE) {
+        ERR(FILE_, __LINE__);  // ERROR("Serial input too long");
         return;
     }
     return root_handle(input_buffer, &Serial);
@@ -66,18 +67,26 @@ void setup() {
     Serial.begin(9600);
     wdt_disable();
     INFO("Start", "");
-
+    char *fw_version = get_str(FW_VERSION, SETTING_LEN);
+    if (strcmp(fw_version, FW_VERSION_) != 0) {
+        Serial.print("EEPROM FW version mismatch: ");
+        Serial.print(fw_version);
+        Serial.print(" != ");
+        Serial.println(FW_VERSION_);
+        Serial.print("Hanging...");
+        while (true) {
+        }
+    }
     util_setup();
-
     byte valid = get_byte(VALID);
     if (valid != EEPROM_SETTINGS_VALID) {
         ERROR("EEPROM not valid", "");
-        while(1);
+        while (1)
+            ;
     }
     station_name = get_str(STATION_NAME, SETTING_LEN);
     connection_setup();
     set_callback(mqtt_callback);
-
     devices_setup();
 }
 
