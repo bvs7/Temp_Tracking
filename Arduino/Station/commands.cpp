@@ -161,7 +161,7 @@ void root_handle(char *input, Stream *resp) {
 
 /**
  * @brief Handle a command for a named setting
- *
+ * 
  * @param sett Name of setting e.g. version/name/ssid/password/
  *              mqtt_server/mqtt_port/poll)
  * @param saveptr Pointer to remaining string after sett
@@ -193,8 +193,7 @@ bool settings_handle(char *sett, char **saveptr, Stream *resp) {
                 }
             } else {           // Set
                 if (i == 0) {  // Cannot set fw version
-                    ERR(FILE_,
-                        __LINE__);  // ERROR("Cannot set fw version", "");
+                    ERR(FILE_, __LINE__);  // ERROR("Cannot set fw version", "");
                     return true;
                 }
                 resp->print(sett);
@@ -217,7 +216,7 @@ bool settings_handle(char *sett, char **saveptr, Stream *resp) {
 
 /**
  * @brief Handle a command for a Port device
- *
+ * 
  * @param idx Index of device
  * @param device Name of device e.g. P0
  * @param saveptr Remaining command string
@@ -288,7 +287,7 @@ void p_device_handle(uint8_t idx, char *device, char **saveptr, Stream *resp) {
 
 /**
  * @brief Handle a command for a Sensor device
- *
+ * 
  * @param idx Index of device
  * @param device Name of device e.g. A0
  * @param saveptr Remaining command string
