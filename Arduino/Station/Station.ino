@@ -74,8 +74,7 @@ void setup() {
         Serial.print(" != ");
         Serial.println(FW_VERSION_);
         Serial.print("Hanging...");
-        while (true) {
-        }
+        while (1) ;
     }
     util_setup();
     byte valid = get_byte(VALID);
