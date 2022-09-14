@@ -22,26 +22,28 @@
 
 // Connection settings addresses
 #define VALID 0x000
-#define FW_VERSION 0x001
+#define FW_VERSION 0x010
 
-#define STATION_NAME 0x010
+#define STATION_NAME (FW_VERSION + SETTING_LEN) // 0x020
 
-#define WIFI_SSID (STATION_NAME + SETTING_LEN)
-#define WIFI_PASSWD (WIFI_SSID + SETTING_LEN)
-#define MQTT_SERVER (WIFI_PASSWD + SETTING_LEN)
-#define MQTT_PORT (MQTT_SERVER + SETTING_LEN)
+#define WIFI_SSID (STATION_NAME + SETTING_LEN) // 0x030
+#define WIFI_PASSWD (WIFI_SSID + SETTING_LEN) // 0x040
+#define MQTT_SERVER (WIFI_PASSWD + SETTING_LEN) // 0x050
+#define MQTT_PORT (MQTT_SERVER + SETTING_LEN) // 0x060
 
-#define P 0x060
+#define POLL_INTERVAL (MQTT_PORT + SETTING_LEN) // 0x070
+
+#define P (POLL_INTERVAL + SETTING_LEN) // 0x080
 
 #define P_SENSE(x) (P + (x * 2))
 #define P_CTRL(x) (P_SENSE(x) + 1)
 
-#define A 0x070
+#define A (P + SETTING_LEN) // 0x090
 
 #define A_INPUT(x) (A + (x * 2))
 #define A_TRIG(x) (A_INPUT(x) + 1)
 
-#define A_POLL_INTERVAL 0x080
+
 
 // Device state
 typedef byte p_state;
@@ -49,7 +51,7 @@ typedef byte p_state;
 #define SENSE_MASK 0x02
 #define P_REQUEST_FLAG 0x04
 
-extern char state_str[][11];
+extern char state_str[][10];
 
 typedef int a_value;
 #define A_REQUEST_FLAG -1

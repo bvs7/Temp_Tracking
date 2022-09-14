@@ -11,4 +11,6 @@ void a_device_setup(uint8_t idx);
 void devices_setup();
 void devices_loop();
 
+extern unsigned long seconds;
+
 #endif  // DEVICES_H_

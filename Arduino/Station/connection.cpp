@@ -21,12 +21,12 @@ unsigned long reconnect_time_millis = 0;
 WiFiEspClient wifi_client;
 PubSubClient mqtt_client(wifi_client);
 
-// TODO: pull out reason for failed connection somehow
-// int wifi_begin(const char *ssid, const char *pass) {
-//     return EspDrv::sendCmd(F("AT+CWJAP_CUR=\"%s\",\"%s\""), 20000, ssid,
-//     pass);
-// }
 
+/**
+ * @brief Attempt to connect to the WiFi network.
+ * 
+ * @return byte WiFi status
+ */
 byte wifi_connect() {
     byte status = WiFi.status();
     switch (status) {
@@ -73,6 +73,11 @@ byte wifi_connect() {
     return status;
 }
 
+/**
+ * @brief Attempt to connect to the MQTT broker.
+ * 
+ * @return int8_t MQTT connection status
+ */
 int8_t mqtt_connect() {
     switch (mqtt_client.state()) {
         case MQTT_CONNECTION_LOST:
@@ -114,18 +119,36 @@ int8_t mqtt_connect() {
     }
 }
 
+/**
+ * @brief Publish a data message to the MQTT broker.
+ * 
+ * @param topic_suffix Topic will be: "data/<station_name>/<topic_suffix>"
+ * @return If the message was published successfully.
+ */
 bool publish_data(const char *topic_suffix, const char *payload, bool retain) {
     char topic[32];
     snprintf(topic, 32, (DATA "/%s/%s"), station_name, topic_suffix);
+    DEBUG("Publish Data: ", topic);
+    DEBUG(" ", payload);
     return mqtt_client.publish(topic, payload, retain);
 }
 
+/**
+ * @brief Publish a log message to the MQTT broker.
+ *      Topic will be "log/<station_name>"
+ * 
+ * @return If the message was published successfully.
+ */
 bool publish_log(const char *message, bool retain) {
     char topic[32];
     snprintf(topic, 32, (LOG "/%s"), station_name);
+    DEBUG("Publish Log: ", message);
     return mqtt_client.publish(topic, message, retain);
 }
 
+/**
+ * @brief Subscribe to a topic on the MQTT broker.
+ */
 bool subscribe(const char *topic, int qos) {
     if (mqtt_client.subscribe(topic, qos)) {
         INFO("Subscribed to topic ", topic);
@@ -136,6 +159,9 @@ bool subscribe(const char *topic, int qos) {
     }
 }
 
+/**
+ * @brief unsubscribe from a topic on the MQTT broker.
+ */
 bool unsubscribe(const char *topic) {
     if (mqtt_client.unsubscribe(topic)) {
         INFO("Unsubscribed from topic ", topic);
@@ -146,15 +172,19 @@ bool unsubscribe(const char *topic) {
     }
 }
 
+/**
+ * @brief Set callback for when a message is received from the MQTT broker.
+ */
 PubSubClient *set_callback(MQTT_CALLBACK_SIGNATURE) {
     mqtt_client.setCallback(callback);
     return &mqtt_client;
 }
 
+/**
+ * @brief Called in main setup()
+ */
 void connection_setup() {
     Serial1.begin(AT_BAUD_RATE);
-
-    delay(100);
 
     WiFi.init(&Serial1); // Necessary here to prevent failure
     // If no shield, stop trying to reconnect
@@ -163,10 +193,13 @@ void connection_setup() {
         ERROR("No WiFi Shield: ", w_status);
         connect = false;
     }
-    // byte wifi_status = wifi_connect();
-    // int8_t mqtt_status = mqtt_connect();
+    // 5:01 keepalive, analog inputs will preempt this
+    mqtt_client.setKeepAlive(301);
 }
 
+/**
+ * @brief Called in main loop()
+ */
 void connection_loop() {
     if(!connect) {
         return;

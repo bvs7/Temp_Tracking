@@ -7,8 +7,17 @@
 #include "settings.h"
 #include "utility.h"
 
+// Library includes
+#include <avr/wdt.h>
+
 #define FILE_ "comm: "
 
+/**
+ * @brief Convert pin string to Arduino pin number
+ *
+ * @param pin pin name e.g. "D0", "A3", "12", "-"
+ * @return uint8_t pin number e.g. 0, 3, 12, UNUSED_PIN
+ */
 uint8_t pin_name_to_num(char *pin) {
     if (pin[0] == 'A') {
         return atoi(pin + 1) + 14;
@@ -19,27 +28,43 @@ uint8_t pin_name_to_num(char *pin) {
     }
 }
 
+/**
+ * @brief Convert Arduino pin number to pin string
+ *
+ * @param pin pin number e.g. 0, 3, 12, UNUSED_PIN
+ * @param name pin name e.g. "D0", "A3", "D12", "-"
+ */
 void pin_num_to_name(uint8_t pin, char *name) {
     if (pin > 13) {
         sprintf(name, "A%d", pin - 14);
     } else if (pin == UNUSED_PIN) {
         sprintf(name, "-");
     } else {
-        sprintf(name, "%d", pin);
+        sprintf(name, "D%d", pin);
     }
 }
 
+/**
+ * @brief Handle a command from an MQTT message
+ *
+ * @param topic Either "cmd/<station_name>" or "cmd/<station_name>/<device>"
+ *           "cmd/<station_name>": payload is root command
+ *           "cmd/<station_name>/<device>": payload is device command
+ * @param resp  MQTTOut LoopbackStream for log response
+ */
 void mqtt_handle(char *topic, byte *payload, unsigned int length,
                  Stream *resp) {
     char *saveptr = NULL;
     char *mode = strtok_r(topic, "/", &saveptr);
     if (mode == NULL || strcmp(mode, CMD) != 0) {
-        ERR(FILE_, __LINE__); //ERROR("Invalid topic: ", mode == NULL ? "NULL" : mode);
+        ERR(FILE_, __LINE__);  // ERROR("Invalid topic: ", mode == NULL ? "NULL"
+                               // : mode);
         return;
     }
     char *name = strtok_r(NULL, "/", &saveptr);
     if (name == NULL || strcmp(name, station_name) != 0) {
-        ERR(FILE_, __LINE__); //ERROR("Invalid name: ", name == NULL ? "NULL" : name);
+        ERR(FILE_, __LINE__);  // ERROR("Invalid name: ", name == NULL ? "NULL"
+                               // : name);
         return;
     }
     payload[length] = '\0';
@@ -52,24 +77,42 @@ void mqtt_handle(char *topic, byte *payload, unsigned int length,
         if (device_name[0] == 'P') {
             uint8_t p_id = device_name[1] - '0';
             if (p_id >= NUM_P_DEVICES) {
-                ERR(FILE_, __LINE__); //ERROR("Invalid P device #: ", device_name);
+                ERR(FILE_,
+                    __LINE__);  // ERROR("Invalid P device #: ", device_name);
                 return;
             }
             p_device_handle(p_id, device_name, (char **)&payload, resp);
         } else if (device_name[0] == 'A') {
             uint8_t a_id = device_name[1] - '0';
             if (a_id >= NUM_A_DEVICES) {
-                ERR(FILE_, __LINE__); //ERROR("Invalid A device #: ", device_name);
+                ERR(FILE_,
+                    __LINE__);  // ERROR("Invalid A device #: ", device_name);
                 return;
             }
             a_device_handle(a_id, device_name, (char **)&payload, resp);
         } else {
-            ERR(FILE_, __LINE__); //ERROR("Invalid device name: ", device_name);
+            ERR(FILE_,
+                __LINE__);  // ERROR("Invalid device name: ", device_name);
             return;
         }
     }
 }
 
+/**
+ * @brief Basic command handling
+ * Commands:
+ * - "hello": respond with "hello"
+ * - "P[n]": device command"
+ * - "A[n]": device command"
+ * - "sync": reset seconds counter
+ * - "mqtt": test mqtt command
+ * - "version": get firmware version
+ * - "name/ssid/password/mqtt_server/mqtt_port/poll": get/set setting
+ * - "reboot": reset the device
+ *
+ * @param input Input string command from Serial or MQTT
+ * @param resp  Stream for log response
+ */
 void root_handle(char *input, Stream *resp) {
     char *saveptr = NULL;
     char *cmd = strtok_r(input, " ", &saveptr);
@@ -79,26 +122,10 @@ void root_handle(char *input, Stream *resp) {
     }
     if (strcmp(cmd, "hello") == 0) {
         resp->println("Hello!");
-        return;
-    } else if (strcmp(cmd, "reboot") == 0) {
-        // TODO: Figure out watchdog timer
-        resp->println("Can't reboot...");
-        return;
-    } else if (strcmp(cmd, "mqtt") == 0) {
-        char *topic = strtok_r(NULL, " ", &saveptr);
-        if (topic == NULL) {
-            ERR(FILE_, __LINE__); //ERROR("No topic specified", "");
-            return;
-        }
-        byte *payload = (byte *)strtok_r(NULL, "\0", &saveptr);
-        unsigned int length = strlen((char *)payload);
-        mqtt_handle(topic, payload, length, resp);
-    } else if (connection_handle(cmd, &saveptr, resp)) {
-        return;
     } else if (cmd[0] == 'P') {
         uint8_t id = cmd[1] - '0';
         if (id < 0 || id >= NUM_P_DEVICES) {
-            ERR(FILE_, __LINE__); //ERROR("Invalid P ID", "");
+            ERR(FILE_, __LINE__);  // ERROR("Invalid P ID", "");
             return;
         } else {
             p_device_handle(id, cmd, &saveptr, resp);
@@ -106,57 +133,96 @@ void root_handle(char *input, Stream *resp) {
     } else if (cmd[0] == 'A') {
         uint8_t id = cmd[1] - '0';
         if (id < 0 || id >= NUM_A_DEVICES) {
-            ERR(FILE_, __LINE__); //ERROR("Invalid A ID", "");
+            ERR(FILE_, __LINE__);  // ERROR("Invalid A ID", "");
             return;
         } else {
             a_device_handle(id, cmd, &saveptr, resp);
         }
+    } else if (strcmp(cmd, "sync") == 0) {
+        seconds = 0;
+    } else if (strcmp(cmd, "mqtt") == 0) {
+        char *topic = strtok_r(NULL, " ", &saveptr);
+        if (topic == NULL) {
+            ERR(FILE_, __LINE__);  // ERROR("No topic specified", "");
+            return;
+        }
+        byte *payload = (byte *)strtok_r(NULL, "\0", &saveptr);
+        unsigned int length = strlen((char *)payload);
+        mqtt_handle(topic, payload, length, resp);
+    } else if (settings_handle(cmd, &saveptr, resp)) {
+    } else if (strcmp(cmd, "reboot") == 0) {
+        // TODO: Figure out watchdog timer
+        resp->println("Rebooting...");
+        wdt_enable(WDTO_2S);
     } else {
         resp->println(" ???");
     }
 }
 
-bool connection_handle(char *cmd, char **saveptr, Stream *resp) {
-    char config_names[][13] = {"station_name", "ssid", "password",
-                               "mqtt_server"};
-    for (int i = 0; i < 4; i++) {
-        if (strcmp(config_names[i], cmd) == 0) {
+/**
+ * @brief Handle a command for a named setting
+ *
+ * @param sett Name of setting e.g. version/name/ssid/password/
+ *              mqtt_server/mqtt_port/poll)
+ * @param saveptr Pointer to remaining string after sett
+ * @param resp Stream for log response
+ * @return true if Command was handled
+ */
+bool settings_handle(char *sett, char **saveptr, Stream *resp) {
+    // clang-format off
+    char sett_names[][12] = {
+        "version", // Cannot set
+        "name", "ssid", "password", "mqtt_server", 
+        "mqtt_port", "poll" // int, not string
+    };
+    // clang-format on
+
+    for (uint8_t i = 0; i < sizeof(sett_names) / sizeof(sett_names[0]); i++) {
+        if (strcmp(sett, sett_names[i]) == 0) {
             char *value = strtok_r(NULL, " ", saveptr);
-            if (value == NULL) {  // Read config value
-                resp->print(config_names[i]);
+            int addr = FW_VERSION + SETTING_LEN * i;
+            if (value == NULL) {  // Get
+                resp->print(sett);
                 resp->print(": ");
-                char *result =
-                    get_str(STATION_NAME + i * SETTING_LEN, SETTING_LEN);
-                resp->println(result);
-                free(result);
-                return true;
-            } else {  // Write config value
-                resp->print(config_names[i]);
+                if (i > 4) {  // mqtt_port and poll are int
+                    resp->println(get_int(addr));
+                } else {
+                    char *read = (char *)get_str(addr, SETTING_LEN);
+                    resp->println(read);
+                    free(read);
+                }
+            } else {           // Set
+                if (i == 0) {  // Cannot set fw version
+                    ERR(FILE_,
+                        __LINE__);  // ERROR("Cannot set fw version", "");
+                    return true;
+                }
+                resp->print(sett);
                 resp->print(" -> ");
-                set_str(STATION_NAME + i * SETTING_LEN, value, SETTING_LEN);
-                resp->println(value);
-                return true;
+                if (i > 4) {  // mqtt_port and poll are int
+                    set_int(addr, atoi(value));
+                    resp->println(get_int(addr));
+                } else {
+                    set_str(addr, value, SETTING_LEN);
+                    char *read = (char *)get_str(addr, SETTING_LEN);
+                    resp->println(read);
+                    free(read);
+                }
             }
-        }
-    }
-    if (strcmp("mqtt_port", cmd) == 0) {
-        char *value = strtok_r(NULL, " ", saveptr);
-        if (value == NULL) {  // Read config value
-            resp->print("mqtt_port");
-            resp->print(": ");
-            resp->println(get_int(MQTT_PORT));
-            return true;
-        } else {  // Write config value
-            resp->print("mqtt_port");
-            resp->print(" -> ");
-            set_int(MQTT_PORT, atoi(value));
-            resp->println(get_int(MQTT_PORT));
             return true;
         }
     }
     return false;
 }
 
+/**
+ * @brief Handle a command for a Port device
+ *
+ * @param idx Index of device
+ * @param device Name of device e.g. P0
+ * @param saveptr Remaining command string
+ * @param resp Stream for log response
+ */
 void p_device_handle(uint8_t idx, char *device, char **saveptr, Stream *resp) {
     char *subcmd = strtok_r(NULL, " ", saveptr);
     if (subcmd == NULL) {
@@ -179,22 +245,30 @@ void p_device_handle(uint8_t idx, char *device, char **saveptr, Stream *resp) {
     } else if (strcmp(subcmd, "sense") == 0) {
         if (value == NULL) {
             resp->print(".sense: ");
-            resp->println(get_byte(P_SENSE(idx)));
+            char name[4];
+            pin_num_to_name(get_byte(P_SENSE(idx)), name);
+            resp->println(name);
         } else {
             set_byte(P_SENSE(idx), pin_name_to_num(value));
             resp->print(".sense -> ");
-            resp->println(get_byte(P_SENSE(idx)));
+            char name[4];
+            pin_num_to_name(get_byte(P_SENSE(idx)), name);
+            resp->println(name);
             devices_setup();
         }
     } else if (strcmp(subcmd, "ctrl") == 0) {
         if (value == NULL) {
             resp->print(".ctrl: ");
-            resp->println(get_byte(P_CTRL(idx)));
+            char name[4];
+            pin_num_to_name(get_byte(P_CTRL(idx)), name);
+            resp->println(name);
         } else {
             digitalWrite(get_byte(P_CTRL(idx)), LOW);
             set_byte(P_CTRL(idx), pin_name_to_num(value));
             resp->print(".ctrl -> ");
-            resp->println(get_byte(P_CTRL(idx)));
+            char name[4];
+            pin_num_to_name(get_byte(P_CTRL(idx)), name);
+            resp->println(name);
             devices_setup();
         }
     } else if (strcmp(subcmd, "ON") == 0) {
@@ -212,6 +286,14 @@ void p_device_handle(uint8_t idx, char *device, char **saveptr, Stream *resp) {
     }
 }
 
+/**
+ * @brief Handle a command for a Sensor device
+ *
+ * @param idx Index of device
+ * @param device Name of device e.g. A0
+ * @param saveptr Remaining command string
+ * @param resp Stream for log response
+ */
 void a_device_config_handle(uint8_t idx, char *device, char **saveptr,
                             Stream *resp) {
     char *subcmd = strtok_r(NULL, " ", saveptr);
@@ -268,4 +350,3 @@ void a_device_config_handle(uint8_t idx, char *device, char **saveptr,
         resp->println(" ???");
     }
 }
-

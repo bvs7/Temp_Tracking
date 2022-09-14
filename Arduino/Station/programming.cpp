@@ -1,23 +1,34 @@
 
 #include "programming.h"
 
-#include "garden.h"
+#include "station.h"
 #include "secrets.h"
 #include "settings.h"
 #include "utility.h"
 
+/**
+ * @brief Program the EEPROM with provided settings
+ * secrets.h provides connection info
+ * station.h provides station settings
+ * To prevent overwriting EEPROM, only program if EEPROM is not valid
+ *  or if user sends something to Serial within 60 seconds
+ */
 void program() {
     Serial.begin(9600);
-    Serial.println("Hit Enter to Program...");
 
-    while (!Serial.available()) {
-        // clang-format off
-        dash(); space(); space(); space();
-        // clang-format on
-        if (millis() > (1000 * 60)) {
-            Serial.println("1 minute without activity, hanging");
-            while (1)
-                ;
+    byte valid = get_byte(VALID);
+    if (valid == EEPROM_SETTINGS_VALID) {
+        Serial.println("EEPROM already valid");
+        Serial.println("Hit Enter to Program...");
+        while (!Serial.available()) {
+            // clang-format off
+            dash(); space(); space(); space();
+            // clang-format on
+            if (millis() > (1000 * 60)) {
+                Serial.println("1 minute without activity, hanging");
+                while (1)
+                    ;
+            }
         }
     }
 
@@ -59,8 +70,8 @@ void program() {
         set_byte(A_TRIG(i), a_trig[i]);
     }
 
-    INFO("Write A poll interval: ", A_POLL_INTERVAL_);
-    set_int(A_POLL_INTERVAL, A_POLL_INTERVAL_);
+    INFO("Write A poll interval: ", POLL_INTERVAL_);
+    set_int(POLL_INTERVAL, POLL_INTERVAL_);
 
     set_byte(VALID, EEPROM_SETTINGS_VALID);
     Serial.println("Finished Programming!");

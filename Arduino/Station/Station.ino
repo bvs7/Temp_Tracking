@@ -12,10 +12,20 @@
 #include "devices.h"
 
 // library includes
+#include <avr/wdt.h>
 #include "LoopbackStream.h"
 
-char state_str[8][11] = {"OFF+UNSET",  "OFF!SET",  "ON!UNSET",  "ON+SET",
-                         "*OFF+UNSET", "*OFF!SET", "*ON!UNSET", "*ON+SET",};
+#define FILE_ "main: "
+
+// clang-format off
+char state_str[8][10] = {
+//  ctrl off   ctrl on
+    "DISABLED","IDLE!",  // sense off
+    "FORCED!", "ENABLED",// sense on
+
+    "*DISABLED","*IDLE!", // request flag
+    "*FORCED!", "*ENABLED",
+};// clang-format on
 
 char *station_name;
 
@@ -27,20 +37,35 @@ a_value a_values[NUM_A_DEVICES];
 LoopbackStream SerialIn(BUFFER_SIZE);
 LoopbackStream MQTTOut(BUFFER_SIZE);
 
+/**
+ * @brief Handle an mqtt message, MQTT_CALLBACK_SIGNATURE structure
+ * 
+ * @param topic mqtt topic, should be "cmd/<station_name>/[<device_name>]"
+ * @param payload Either a root command or details for a device command
+ */
 void mqtt_callback(char *topic, byte *payload, unsigned int length) {
     mqtt_handle(topic, payload, length, &MQTTOut);
     publish_log(MQTTOut.readString().c_str(), false);
 }
 
+/**
+ * @brief Handle a command from Serial
+ * Serial input is passed to SerialIn LoopbackStream. Upon '\n', handle command
+ */
 void serial_callback() {
     char input_buffer[BUFFER_SIZE] = {0};
-    SerialIn.readBytesUntil('\n', input_buffer, BUFFER_SIZE);
+    int len = SerialIn.readBytesUntil('\n', input_buffer, BUFFER_SIZE);
+    if(len >= BUFFER_SIZE) {
+        ERR(FILE_, __LINE__); //ERROR("Serial input too long");
+        return;
+    }
     return root_handle(input_buffer, &Serial);
 }
 
 void setup() {
     Serial.begin(9600);
-    DEBUG("Start", "");
+    wdt_disable();
+    INFO("Start", "");
 
     util_setup();
 
