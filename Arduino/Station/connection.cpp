@@ -197,7 +197,7 @@ void connection_setup() {
         connect = false;
     }
     // 5:01 keepalive, analog inputs will preempt this
-    mqtt_client.setKeepAlive(301);
+    mqtt_client.setKeepAlive(get_int(POLL_INTERVAL)+1);
 }
 
 /**
