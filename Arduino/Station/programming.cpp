@@ -1,9 +1,9 @@
 
 #include "programming.h"
 
-#include "station.h"
 #include "secrets.h"
 #include "settings.h"
+#include "station.h"
 #include "utility.h"
 
 /**
@@ -34,6 +34,9 @@ void program() {
 
     INFO("Write FW version ", FW_VERSION_);
     set_str(FW_VERSION, FW_VERSION_, SETTING_LEN);
+
+    INFO("Write category ", CATEGORY_);
+    set_str(CATEGORY, CATEGORY_, SETTING_LEN);
 
     INFO("Write station name ", STATION_NAME_);
     set_str(STATION_NAME, STATION_NAME_, SETTING_LEN);

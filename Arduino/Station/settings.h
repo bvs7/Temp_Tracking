@@ -24,26 +24,30 @@
 #define VALID 0x000
 #define FW_VERSION 0x010
 
-#define STATION_NAME (FW_VERSION + SETTING_LEN) // 0x020
+#define CATEGORY (FW_VERSION + SETTING_LEN)
 
-#define WIFI_SSID (STATION_NAME + SETTING_LEN) // 0x030
-#define WIFI_PASSWD (WIFI_SSID + SETTING_LEN) // 0x040
-#define MQTT_SERVER (WIFI_PASSWD + SETTING_LEN) // 0x050
-#define MQTT_PORT (MQTT_SERVER + SETTING_LEN) // 0x060
+#define STATION_NAME (CATEGORY + SETTING_LEN)
 
-#define POLL_INTERVAL (MQTT_PORT + SETTING_LEN) // 0x070
+#define WIFI_SSID (STATION_NAME + SETTING_LEN)
+#define WIFI_PASSWD (WIFI_SSID + SETTING_LEN)
+#define MQTT_SERVER (WIFI_PASSWD + SETTING_LEN)
+#define MQTT_PORT (MQTT_SERVER + SETTING_LEN)
 
-#define P (POLL_INTERVAL + SETTING_LEN) // 0x080
+#define POLL_INTERVAL (MQTT_PORT + SETTING_LEN)
+
+#define P (POLL_INTERVAL + SETTING_LEN)
 
 #define P_SENSE(x) (P + (x * 2))
 #define P_CTRL(x) (P_SENSE(x) + 1)
 
-#define A (P + SETTING_LEN) // 0x090
+#define A (P + SETTING_LEN)
 
 #define A_INPUT(x) (A + (x * 2))
 #define A_TRIG(x) (A_INPUT(x) + 1)
 
+// End of settings: 0x0B0
 
+#define BUFFER_SIZE 32
 
 // Device state
 typedef byte p_state;
@@ -59,7 +63,8 @@ typedef int a_value;
 extern p_state p_states[];
 extern a_value a_values[];
 
-extern char *station_name;
+extern char category[];
+extern char station_name[];
 
 byte get_byte(int addr);
 int get_int(int addr);

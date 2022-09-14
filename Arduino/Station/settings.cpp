@@ -18,13 +18,13 @@ int get_int(int addr) {
 
 /**
  * @brief Get the str object at addr of length
- * 
+ *
  * @return char* a pointer to an allocated section of memory
  */
 char *get_str(int addr, size_t length) {
     char *s = (char *)malloc(length);
     memset(s, 0, length);
-    for (uint8_t i = 0; i < length-1; i++) {
+    for (uint8_t i = 0; i < length - 1; i++) {
         s[i] = EEPROM.read(addr + i);
         if (s[i] == '\0') {
             break;
@@ -44,7 +44,7 @@ void set_int(int addr, int val) {
 
 /** @brief Write str s to EEPROM, max length */
 void set_str(int addr, char *s, size_t length) {
-    for (uint8_t i = 0; i < length-1; i++) {
+    for (uint8_t i = 0; i < length - 1; i++) {
         EEPROM.update(addr + i, s[i]);
         if (s[i] == '\0') {
             break;

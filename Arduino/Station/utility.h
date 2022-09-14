@@ -1,7 +1,7 @@
 #ifndef UTILITY_H_
 #define UTILITY_H_
 
-#define DEBUG_LOG_LEVEL 4
+#define DEBUG_LOG_LEVEL 1
 
 /* Debug levels:
 0 - No debug
@@ -13,6 +13,7 @@
 6 - Very Verbose
 */
 
+// clang-format off
 #if DEBUG_LOG_LEVEL > 0
 #define ERROR(x, y) if(DEBUG_LOG_LEVEL > 0) {Serial.print(x); Serial.println(y);}
 #define ERR(f, n) if(DEBUG_LOG_LEVEL > 0) {Serial.print("ERROR: "); Serial.print(f); Serial.println(n);}
@@ -30,6 +31,7 @@
 #define VERBOSE(x, y)
 #define VERBOSE2(x, y)
 #endif
+// clang-format on
 
 void dot();
 
@@ -39,4 +41,4 @@ void space();
 
 void util_setup();
 
-#endif // UTILITY_H_
+#endif  // UTILITY_H_

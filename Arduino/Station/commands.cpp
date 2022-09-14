@@ -61,6 +61,12 @@ void mqtt_handle(char *topic, byte *payload, unsigned int length,
                                // : mode);
         return;
     }
+    char *topic_category = strtok_r(NULL, "/", &saveptr);
+    if (topic_category == NULL || strcmp(topic_category, category) != 0) {
+        ERR(FILE_, __LINE__);  // ERROR("Invalid topic: ", category == NULL ?
+                               // "NULL" : category);
+        return;
+    }
     char *name = strtok_r(NULL, "/", &saveptr);
     if (name == NULL || strcmp(name, station_name) != 0) {
         ERR(FILE_, __LINE__);  // ERROR("Invalid name: ", name == NULL ? "NULL"

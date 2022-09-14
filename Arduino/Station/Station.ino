@@ -28,12 +28,11 @@ char state_str[8][10] = {
     "*FORCED!", "*ENABLED",
 };  // clang-format on
 
-char *station_name;
+char category[SETTING_LEN];
+char station_name[SETTING_LEN];
 
 p_state p_states[NUM_P_DEVICES] = {0};
 a_value a_values[NUM_A_DEVICES];
-
-#define BUFFER_SIZE 32
 
 LoopbackStream SerialIn(BUFFER_SIZE);
 LoopbackStream MQTTOut(BUFFER_SIZE);
@@ -84,7 +83,14 @@ void setup() {
         while (1)
             ;
     }
-    station_name = get_str(STATION_NAME, SETTING_LEN);
+
+    char *category_tmp = get_str(CATEGORY, SETTING_LEN);
+    strcpy(category, category_tmp);
+    free(category_tmp);
+    char *station_name_tmp = get_str(STATION_NAME, SETTING_LEN);
+    strcpy(station_name, station_name_tmp);
+    free(station_name_tmp);
+
     connection_setup();
     set_callback(mqtt_callback);
     devices_setup();

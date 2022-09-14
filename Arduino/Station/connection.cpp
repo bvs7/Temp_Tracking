@@ -21,10 +21,9 @@ unsigned long reconnect_time_millis = 0;
 WiFiEspClient wifi_client;
 PubSubClient mqtt_client(wifi_client);
 
-
 /**
  * @brief Attempt to connect to the WiFi network.
- * 
+ *
  * @return byte WiFi status
  */
 byte wifi_connect() {
@@ -35,7 +34,7 @@ byte wifi_connect() {
             WiFi.init(&Serial1);
             status = WiFi.status();
             if (status == WL_NO_SHIELD) {
-                ERR(FILE_, __LINE__); //ERROR("WiFi: ", "No Shield");
+                ERR(FILE_, __LINE__);  // ERROR("WiFi: ", "No Shield");
                 delay(100);
                 break;
             }
@@ -51,14 +50,15 @@ byte wifi_connect() {
                 delay(100);
                 attempts++;
                 if (attempts >= 10) {
-                    ERR(FILE_, __LINE__); //ERROR("WiFi: ", "Couldn't Connect");
+                    ERR(FILE_,
+                        __LINE__);  // ERROR("WiFi: ", "Couldn't Connect");
                     break;
                 }
             }
             free(ssid);
             free(passwd);
             if (WiFi.status() != WL_CONNECTED) {
-                ERR(FILE_, __LINE__); //ERROR("WiFi: ", "Couldn't Connect");
+                ERR(FILE_, __LINE__);  // ERROR("WiFi: ", "Couldn't Connect");
                 break;
             }
             INFO("WiFi: ", "Connected");
@@ -75,7 +75,7 @@ byte wifi_connect() {
 
 /**
  * @brief Attempt to connect to the MQTT broker.
- * 
+ *
  * @return int8_t MQTT connection status
  */
 int8_t mqtt_connect() {
@@ -84,7 +84,7 @@ int8_t mqtt_connect() {
         case MQTT_CONNECT_FAILED:
         case MQTT_DISCONNECTED:
             if (wifi_connect() != WL_CONNECTED) {
-                ERR(FILE_, __LINE__); //ERROR("MQTT: ", "Failed: WiFi");
+                ERR(FILE_, __LINE__);  // ERROR("MQTT: ", "Failed: WiFi");
                 break;
             }
             // Intentional fallthrough
@@ -100,15 +100,16 @@ int8_t mqtt_connect() {
             mqtt_client.connect(station_name);
             int8_t mqtt_state = mqtt_client.state();
             if (mqtt_state != MQTT_CONNECTED) {
-                ERR(FILE_, __LINE__); //ERROR("MQTT: ", "Couldn't Connect");
+                ERR(FILE_, __LINE__);  // ERROR("MQTT: ", "Couldn't Connect");
                 break;
             }
             free(mqtt_server);
             // Intentional fallthrough
         case MQTT_CONNECTED:
             INFO("MQTT: ", "Connected");
-            char topic[2*SETTING_LEN];
-            snprintf(topic, 2*SETTING_LEN, CMD "/%s/#", station_name);
+            char topic[2 * SETTING_LEN];
+            snprintf(topic, 2 * SETTING_LEN, "%s/%s/%s/#", CMD, category,
+                     station_name);
             subscribe(topic, 0);
             // clang-format off
             dash(); dot(); dot(); space();
@@ -121,13 +122,14 @@ int8_t mqtt_connect() {
 
 /**
  * @brief Publish a data message to the MQTT broker.
- * 
+ *
  * @param topic_suffix Topic will be: "data/<station_name>/<topic_suffix>"
  * @return If the message was published successfully.
  */
 bool publish_data(const char *topic_suffix, const char *payload, bool retain) {
-    char topic[32];
-    snprintf(topic, 32, (DATA "/%s/%s"), station_name, topic_suffix);
+    char topic[BUFFER_SIZE];
+    snprintf(topic, BUFFER_SIZE, (DATA "%s/%s/%s"), category, station_name,
+             topic_suffix);
     DEBUG("Publish Data: ", topic);
     DEBUG(" ", payload);
     return mqtt_client.publish(topic, payload, retain);
@@ -136,12 +138,12 @@ bool publish_data(const char *topic_suffix, const char *payload, bool retain) {
 /**
  * @brief Publish a log message to the MQTT broker.
  *      Topic will be "log/<station_name>"
- * 
+ *
  * @return If the message was published successfully.
  */
 bool publish_log(const char *message, bool retain) {
-    char topic[32];
-    snprintf(topic, 32, (LOG "/%s"), station_name);
+    char topic[BUFFER_SIZE];
+    snprintf(topic, BUFFER_SIZE, (LOG "/%s"), station_name);
     DEBUG("Publish Log: ", message);
     return mqtt_client.publish(topic, message, retain);
 }
@@ -154,7 +156,7 @@ bool subscribe(const char *topic, int qos) {
         INFO("Subscribed to topic ", topic);
         return true;
     } else {
-        ERR(FILE_, __LINE__); //ERROR("Failed to subscribe to topic ", topic);
+        ERR(FILE_, __LINE__);  // ERROR("Failed to subscribe to topic ", topic);
         return false;
     }
 }
@@ -167,7 +169,8 @@ bool unsubscribe(const char *topic) {
         INFO("Unsubscribed from topic ", topic);
         return true;
     } else {
-        ERR(FILE_, __LINE__); //ERROR("Failed to unsubscribe from topic ", topic);
+        ERR(FILE_,
+            __LINE__);  // ERROR("Failed to unsubscribe from topic ", topic);
         return false;
     }
 }
@@ -186,7 +189,7 @@ PubSubClient *set_callback(MQTT_CALLBACK_SIGNATURE) {
 void connection_setup() {
     Serial1.begin(AT_BAUD_RATE);
 
-    WiFi.init(&Serial1); // Necessary here to prevent failure
+    WiFi.init(&Serial1);  // Necessary here to prevent failure
     // If no shield, stop trying to reconnect
     byte w_status = WiFi.status();
     if (true) {
@@ -201,7 +204,7 @@ void connection_setup() {
  * @brief Called in main loop()
  */
 void connection_loop() {
-    if(!connect) {
+    if (!connect) {
         return;
     }
     if (!mqtt_client.loop()) {

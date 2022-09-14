@@ -7,8 +7,8 @@ unsigned long last_tick_millis = 0;
 unsigned long seconds = 0;
 
 /**
- * @brief Blocking fn to get distance from sensor. 
- * 
+ * @brief Blocking fn to get distance from sensor.
+ *
  * @return int Distance in milimeters
  */
 int dist_sensor(int trig_pin, int echo_pin) {
@@ -21,25 +21,25 @@ int dist_sensor(int trig_pin, int echo_pin) {
     delayMicroseconds(10);
     digitalWrite(trig_pin, LOW);
 
-    // Speed of sound is 343 m/s or .000343 mm/ns.
-    // Inverse speed of sound is 2915 ns/mm.
-    #define NS_PER_MM 2915
-    #define NS_PER_US 1000 
-    #define MAX_DISTANCE_MM 4000
-    #define MAX_DURATION_US (MAX_DISTANCE_MM * 2 * NS_PER_MM / NS_PER_US)
+// Speed of sound is 343 m/s or .000343 mm/ns.
+// Inverse speed of sound is 2915 ns/mm.
+#define NS_PER_MM 2915
+#define NS_PER_US 1000
+#define MAX_DISTANCE_MM 4000
+#define MAX_DURATION_US (MAX_DISTANCE_MM * 2 * NS_PER_MM / NS_PER_US)
 
     unsigned long duration_us = pulseIn(echo_pin, HIGH, MAX_DURATION_US);
-    
+
     return (int)(duration_us * NS_PER_US / NS_PER_MM / 2);
 }
 
 /**
  * @brief Set a port to an ON/OFF ctrl state
- * 
+ *
  * @param idx Port Number
  * @param set true for ON, false for OFF
  */
-void p_device_set(uint8_t idx, bool set){
+void p_device_set(uint8_t idx, bool set) {
     if (set) {
         digitalWrite(get_byte(P_CTRL(idx)), HIGH);
     } else {
@@ -49,7 +49,7 @@ void p_device_set(uint8_t idx, bool set){
 
 /**
  * @brief Check if port state has changed and update if so
- * 
+ *
  * @param idx Port Number
  */
 void update_p_device(uint8_t idx) {
@@ -72,7 +72,7 @@ void update_p_device(uint8_t idx) {
 
 /**
  * @brief Get sensor reading and send update
- * 
+ *
  * @param idx Sensor Number
  */
 void update_a_device(uint8_t idx) {
