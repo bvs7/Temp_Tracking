@@ -8,7 +8,7 @@ import logging
 
 
 config = ConfigParser()
-config.read('config.ini')
+config.read('GardenDeviceDataListener/config.ini')
 
 logging.basicConfig(
     level=config.get('logging', 'LogLevel'),
@@ -23,14 +23,13 @@ PORT_DEFAULT = "UNKNOWN"
 
 class GardenDeviceDBAccessor():
     DeviceEvents_Create = """
-    CREATE TABLE IF NOT EXISTS DeviceEvents (
+    CREATE TABLE IF NOT EXISTS DeviceEvents(
         station_name    VARCHAR(16) NOT NULL,
-        device_type     TEXT CHECK('P', 'A') NOT NULL,
+        device_type     TEXT NOT NULL,
         device_idx      INT NOT NULL,
         event_time      DATETIME NOT NULL,
-        p_state         TEXT CHECK("DISABLED", "IDLE!", "FORCED!", "ENABLED", "UNKNOWN"),
-        a_value         INT,
-    PRIMARY KEY (station_name, device_type, device_id, event_time)
+        p_state         TEXT,
+        a_value         INT
     );"""
 
     DeviceStates_Create = """
@@ -55,8 +54,7 @@ class GardenDeviceDBAccessor():
 
     DeviceEvents_Insert = \
         "INSERT INTO DeviceEvents (station_name, device_type, device_idx,"\
-        "event_time, p_state, a_value) VALUES ({station_name}, {device_type},"\
-        "{device_idx}, {event_time}, {p_state}, {a_value})"
+        "event_time, p_state, a_value) VALUES (?,?,?,?,?,?)"
 
     DeviceStates_Replace = \
         "INSERT OR REPLACE INTO DeviceStates (station_name, device_type, " \
@@ -99,7 +97,7 @@ class GardenDeviceDBAccessor():
         if not os.path.exists(self.dir_name):
             os.makedirs(self.dir_name)
         if not os.path.exists(os.path.join(self.dir_name, station_name)):
-            os.makedirs(os.path.join(self.dir_fname, station_name))
+            os.makedirs(os.path.join(self.dir_name, station_name))
         if not os.path.exists(os.path.join(self.dir_name, station_name,
                                            device_id)):
             os.makedirs(os.path.join(self.dir_name, station_name, device_id))
@@ -107,13 +105,13 @@ class GardenDeviceDBAccessor():
     def get_device_name(self, station_name: str, device_type: str,
                         device_idx: int) -> str:
         device_id = f"{device_type}{device_idx}"
-        self.check_dir(station_name, device_type, device_idx)
+        self.check_dir(station_name, device_id)
         path = os.path.join(self.dir_name, station_name, device_id)
         try:
             with open(os.path.join(path, "device_name.txt"), "r") as f:
                 return f.read()
         except FileNotFoundError:
-            logging.warn(f"Device name file not found for {station_name}, "
+            logging.warning(f"Device name file not found for {station_name}, "
                          f"{device_type}, {device_idx}")
             display_device_name = f"{station_name}/{device_type}{device_idx}"
             self.put_device_name(display_device_name, station_name,
@@ -123,7 +121,7 @@ class GardenDeviceDBAccessor():
     def put_device_name(self, device_name: str, station_name: str,
                         device_type: str, device_idx: int):
         device_id = f"{device_type}{device_idx}"
-        self.check_dir(station_name, device_type, device_idx)
+        self.check_dir(station_name, device_id)
         path = os.path.join(self.dir_name, station_name, device_id)
         with open(os.path.join(path, "device_name.txt"), "w") as f:
             f.write(device_name)
@@ -155,10 +153,12 @@ class GardenDeviceDBAccessor():
         path = os.path.join(self.dir_name, station_name, device_id)
         with open(os.path.join(path, "last_update.txt"), "w") as f:
             f.write(last_update.isoformat())
-        with open(os.path.join(path, "p_state.txt"), "w") as f:
-            f.write(p_state)
-        with open(os.path.join(path, "a_value.txt"), "w") as f:
-            f.write(str(a_value))
+        if p_state:
+            with open(os.path.join(path, "p_state.txt"), "w") as f:
+                f.write(p_state)
+        if a_value:
+            with open(os.path.join(path, "a_value.txt"), "w") as f:
+                f.write(str(a_value))
 
     # def get_device_name(self, station_name: str, device_type: str,
     #                     device_idx: int) -> str:
@@ -196,43 +196,49 @@ class GardenDeviceDBAccessor():
     def put_event(self, station_name: str, device_type: str,
                   device_idx: int, event_time: datetime,
                   p_state: str, a_value: int):
-        with self.SQLConnectionFn(self.db_fname) as conn:
+        with sqlite3.connect(self.db_fname) as conn:
             cursor = conn.cursor()
-            cursor.execute(self.DeviceEvents_Insert.format(*locals()))
+            data = (station_name, device_type, device_idx, event_time, p_state, a_value)
+            cursor.execute(self.DeviceEvents_Insert, data)
 
-    def submit_event(self, **kwargs):
+    def submit_event(self, station_name: str, device_type: str,
+                  device_idx: int, event_time: datetime,
+                  p_state: str, a_value: int):
         display_device_name = \
-            "{station_name} {device_type}{device_idx}".format(**kwargs)
-        if 'p_state' in kwargs and not kwargs['p_state'] == None:
-            display_value = kwargs['p_state']
-        elif 'a_value' in kwargs and not kwargs['a_value'] == None:
-            display_value = kwargs['a_value']
+            "{station_name}/{device_type}{device_idx}".format(**locals())
+        if not p_state == None:
+            display_value = p_state
+        elif not a_value == None:
+            display_value = a_value
         else:
             display_value = None
         if self.db_fname:
-            self.put_event(**kwargs)
-            self.update_state(**kwargs)
-            device_name = self.get_device_name(**kwargs)
+            self.put_event(station_name, device_type, device_idx, event_time, p_state, a_value)
+            self.update_state(station_name, device_type, device_idx, event_time, p_state, a_value)
+            device_name = self.get_device_name(station_name, device_type, device_idx)
             if device_name is None:
                 device_name = display_device_name
-                self.put_device_name(device_name=device_name, **kwargs)
+                self.put_device_name(device_name, station_name, device_type, device_idxs)
                 logging.info(f"New Device Named: {device_name}")
             if device_name != display_device_name:
                 display_device_name = \
                     f"{device_name} ({display_device_name})"
         logging.info(
             f"{display_device_name} Event:"
-            f"{display_value} @ {kwargs['event_time']}")
+            f"{display_value} @ {event_time}")
 
 
 class GardenDeviceDataListener(MQTTClient):
     """MQTT Client that listens for Garden Device Data. When data is received,
     an event is stored in a database, and the device state is updated."""
 
-    def __init__(self, db_fname=None, DBAccessorClass=GardenDeviceDBAccessor,
+    def __init__(self, db_fname=None, dir_name = None, 
+                 DBAccessorClass=GardenDeviceDBAccessor,
                  MQTTClientArgs=None, ):
+        if not MQTTClientArgs:
+            MQTTClientArgs = {}
         super().__init__(self.__class__.__name__, **MQTTClientArgs)
-        self.db_accessor = DBAccessorClass(db_fname)
+        self.db_accessor = DBAccessorClass(db_fname, dir_name)
 
     def run(self):
         """Run the MQTT client. Blocking."""
@@ -254,8 +260,8 @@ class GardenDeviceDataListener(MQTTClient):
         logging.info(f"Received message on topic {msg.topic}: {msg.payload}")
         topic = msg.topic
         topic_levels = topic.split("/")
-        assert all(len(topic_levels) == 4, topic_levels[0] == "data",
-                   topic_levels[1] == "garden"), "Invalid topic!"
+        assert all([len(topic_levels) == 4, topic_levels[0] == "data",
+                   topic_levels[1] == "garden"]), "Invalid topic!"
         payload = msg.payload.decode("utf-8")
         station_name = topic_levels[2]
         device_type = topic_levels[3][0]
@@ -270,6 +276,7 @@ class GardenDeviceDataListener(MQTTClient):
 
 
 if __name__ == "__main__":
+    logging.log(logging.CRITICAL, "\n\n START \n")
     try:
         GardenDeviceDataListener(
             config.get('data', 'DatabaseFileName'),
