@@ -4,6 +4,10 @@
   - [ ] Pump
     - [ ] Control Wiring
       - [ ] Test
+      - [ ] PCB
+        - [x] Relay Footprint
+        - [ ] Swtich Footprint?
+        - [ ] Layout
       - [ ] Soldering
       - [ ] Mounting
     - [ ] Enclosure
@@ -22,8 +26,8 @@
     - [ ] Wiring
   - [ ] ESP8266 wiring
   - [ ] Software
-    - [ ] Wifi
-    - [ ] MQTT
+    - [x] Wifi
+    - [x] MQTT
     - [ ] Pump/Valve Control/Sense
     - [ ] Distance Sensor
     - [ ] Robustness/Sleep/Interrupts

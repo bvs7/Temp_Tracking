@@ -1,7 +1,0 @@
-{
-    "board": "arduino:avr:pro",
-    "programmer": "arduino:avrisp",
-    "sketch": "Arduino\\TestWiFiMQTT\\TestWiFiMQTT.ino",
-    "configuration": "cpu=8MHzatmega328",
-    "intelliSenseGen": "disable"
-}

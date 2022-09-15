@@ -1,0 +1,3 @@
+(sym_lib_table
+  (lib (name Garden_Sys-rescue)(type Legacy)(uri ${KIPRJMOD}/Garden_Sys-rescue.lib)(options "")(descr ""))
+)
