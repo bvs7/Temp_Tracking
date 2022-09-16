@@ -1,60 +1,26 @@
 # TODO
 
-- [ ] Main-Tank Arduino Station
+- [ ] Arduino Stations
+  - [ ] Board (V2)
+    - [x] Design
+    - [ ] Assembly/Debugging
+  - [x] Firmware
+    - [x] MQTT Connection
+    - [x] Port/Sensor Interface
+    - [x] Programming
+    - [x] Serial Commands
+  - [ ] Valves
   - [ ] Pump
-    - [ ] Control Wiring
-      - [ ] Test
-      - [ ] PCB
-        - [x] Relay Footprint
-        - [ ] Swtich Footprint?
-        - [ ] Layout
-      - [ ] Soldering
-      - [ ] Mounting
-    - [ ] Enclosure
-    - [ ] Piping
-  - [ ] Trees Valve
-    - [ ] Control Wiring
-      - [ ] Test
-      - [ ] Soldering
-      - [ ] Mounting
-    - [ ] Enclosure
-    - [ ] Piping
+  - [ ] Moisture Sensor
+  - [ ] Temp Sensor
+  - [ ] Light Sensor
   - [ ] Distance Sensor
-    - [ ] Test Sensor
-    - [ ] Test Physical Concept
-    - [ ] Enclosue/Mounting
-    - [ ] Wiring
-  - [ ] ESP8266 wiring
-  - [ ] Software
-    - [x] Wifi
-    - [x] MQTT
-    - [ ] Pump/Valve Control/Sense
-    - [ ] Distance Sensor
-    - [ ] Robustness/Sleep/Interrupts
-
-- [ ] Raised Beds Arduino Station
-  - [ ] Valve Manifold
-    - [ ] Control Wiring
-      - [ ] Test
-      - [ ] Soldering
-      - [ ] Mounting
-    - [ ] Enclosure
-    - [ ] Piping
-  - [ ] Sensors
-    - [ ] Temperature Sensors
-    - [ ] Light Sensors
-    - [ ] Moisture Sensors
-  - [ ] ESP8266 wiring
-  - [ ] Software
-    - [ ] Wifi
-    - [ ] MQTT
-    - [ ] Valves Control/Sense
-    - [ ] Sensors Reading and interpreting
-    - [ ] Robustness/Sleep/Interrupts
   
 - [ ] Raspberry Pi Base Station
-  - [ ] MQTT broker
-  - [ ] MQTT Server
-  - [ ] Status/Logging Database
-  - [ ] Webserver
-  - [ ] Garden Controller
+  - [x] MQTT broker
+  - [x] Database Data Listener
+  - [-] Data Processing
+  - [ ] Backend Server
+  - [ ] WebServer
+
+- [ ] Application
