@@ -192,7 +192,7 @@ void connection_setup() {
     WiFi.init(&Serial1);  // Necessary here to prevent failure
     // If no shield, stop trying to reconnect
     byte w_status = WiFi.status();
-    if (true) {
+    if (w_status == WL_NO_SHIELD) {
         ERROR("No WiFi Shield: ", w_status);
         connect = false;
     }

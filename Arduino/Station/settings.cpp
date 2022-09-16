@@ -8,6 +8,38 @@
 
 #define START_ADDR 0x020
 
+/**
+ * @brief Convert pin string to Arduino pin number
+ *
+ * @param pin pin name e.g. "D0", "A3", "12", "-"
+ * @return uint8_t pin number e.g. 0, 3, 12, UNUSED_PIN
+ */
+uint8_t pin_name_to_num(char *pin) {
+    if (pin[0] == 'A') {
+        return atoi(pin + 1) + 14;
+    } else if (pin[0] == '-') {
+        return UNUSED_PIN;
+    } else {
+        return atoi(pin);
+    }
+}
+
+/**
+ * @brief Convert Arduino pin number to pin string
+ *
+ * @param pin pin number e.g. 0, 3, 12, UNUSED_PIN
+ * @param name pin name e.g. "D0", "A3", "D12", "-"
+ */
+void pin_num_to_name(uint8_t pin, char *name) {
+    if (pin == UNUSED_PIN) {
+        sprintf(name, "-");
+    } else if (pin > 13) {
+        sprintf(name, "A%d", pin - 14);
+    } else {
+        sprintf(name, "D%d", pin);
+    }
+}
+
 /** @brief Get the byte stored at addr */
 byte get_byte(int addr) { return EEPROM.read(addr); }
 
@@ -50,4 +82,16 @@ void set_str(int addr, char *s, size_t length) {
             break;
         }
     }
+}
+
+bool check_fw_version(){
+    char *fw_version = get_str(FW_VERSION, SETTING_LEN);
+    if (strcmp(fw_version, FW_VERSION_) != 0) {
+        Serial.print("EEPROM FW version mismatch: ");
+        Serial.print(fw_version);
+        Serial.print(" != ");
+        Serial.println(FW_VERSION_);
+        return false;
+    }
+    return true;
 }

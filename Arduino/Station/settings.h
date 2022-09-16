@@ -13,6 +13,8 @@
 #define EEPROM_SETTINGS_VALID 0x00
 #define EEPROM_SETTINGS_INVALID 0xFF
 
+#define FW_VERSION_ "0.0.1"
+
 #define SETTING_LEN 16
 
 #define NUM_P_DEVICES 5
@@ -66,6 +68,9 @@ extern a_value a_values[];
 extern char category[];
 extern char station_name[];
 
+uint8_t pin_name_to_num(char *pin);
+void pin_num_to_name(uint8_t pin, char *name);
+
 byte get_byte(int addr);
 int get_int(int addr);
 char *get_str(int addr, size_t length);
@@ -73,5 +78,7 @@ char *get_str(int addr, size_t length);
 void set_byte(int addr, byte val);
 void set_int(int addr, int val);
 void set_str(int addr, char *val, size_t length);
+
+bool check_fw_version();
 
 #endif  // SETTINGS_H_

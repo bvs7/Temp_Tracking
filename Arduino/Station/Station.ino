@@ -14,8 +14,6 @@
 
 #include "LoopbackStream.h"
 
-#define FW_VERSION_ "0.0.1"
-
 #define FILE_ "main: "
 
 // clang-format off
@@ -66,17 +64,16 @@ void setup() {
     Serial.begin(9600);
     wdt_disable();
     INFO("Start", "");
-    char *fw_version = get_str(FW_VERSION, SETTING_LEN);
-    if (strcmp(fw_version, FW_VERSION_) != 0) {
-        Serial.print("EEPROM FW version mismatch: ");
-        Serial.print(fw_version);
-        Serial.print(" != ");
-        Serial.println(FW_VERSION_);
-        Serial.print("Hanging...");
-        while (1)
-            ;
-    }
     util_setup();
+    if(!check_fw_version()){
+        while(1){
+            // clang-format off
+            dash(); dash(); dash(); dash();
+            space(); space(); space(); space();
+            space(); space(); space(); space();
+            //clang-format on
+        }
+    }
     byte valid = get_byte(VALID);
     if (valid != EEPROM_SETTINGS_VALID) {
         ERROR("EEPROM not valid", "");
@@ -116,15 +113,23 @@ void loop() {
 #include "utility.h"
 
 void setup() {
+    Serial.begin(9600);
     util_setup();
-    program();
+    Serial.println("Programming mode. y to program, s to read current settings.");
 }
 
 void loop() {
+    // Check for serial input
+    while (Serial.available() > 0) {
+        char c = Serial.read();
+        if (c == 'y') {
+            program();
+        } else if (c == 's') {
+            print_settings();
+        }
+    }
     // clang-format off
-    {dash(); dash(); dash(); space();} // O
-    {dash(); dot();  dash(); space();} // K
-    {space(); space(); space();} // _
+    {dot(); space();}
     // clang-format on
 }
 #endif

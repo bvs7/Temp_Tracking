@@ -28,6 +28,7 @@ void dash() {
 /** @brief Pause for 2 units */
 void space() { delay(MORSE_UNIT_MILLIS * 2); }
 
+
 /** @brief Set up LED pin */
 void util_setup() { pinMode(LED_PIN, OUTPUT); }
 

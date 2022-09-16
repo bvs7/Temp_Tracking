@@ -6,6 +6,55 @@
 #include "station.h"
 #include "utility.h"
 
+void print_settings(){
+
+    Serial.println("Printing current settings:");
+    Serial.print("VALID: ");
+    Serial.println(get_byte(VALID));
+    Serial.print("FW_VERSION: ");
+    Serial.println(get_str(FW_VERSION, SETTING_LEN));
+    Serial.print("CATEGORY: ");
+    Serial.println(get_str(CATEGORY, SETTING_LEN));
+    Serial.print("STATION_NAME: ");
+    Serial.println(get_str(STATION_NAME, SETTING_LEN));
+    Serial.print("WIFI_SSID: ");
+    Serial.println(get_str(WIFI_SSID, SETTING_LEN));
+    Serial.print("WIFI_PASSWD: ");
+    Serial.println(get_str(WIFI_PASSWD, SETTING_LEN));
+    Serial.print("MQTT_SERVER: ");
+    Serial.println(get_str(MQTT_SERVER, SETTING_LEN));
+    Serial.print("MQTT_PORT: ");
+    Serial.println(get_int(MQTT_PORT));
+    Serial.print("POLL_INTERVAL: ");
+    Serial.println(get_int(POLL_INTERVAL));
+    Serial.print("P PINS: ");
+    for (int i = 0; i < NUM_P_DEVICES; i++) {
+        char sense[4];
+        pin_num_to_name(get_byte(P_SENSE(i)), sense);
+        Serial.print(sense);
+        Serial.print("/");
+        char ctrl[4];
+        pin_num_to_name(get_byte(P_CTRL(i)), ctrl);
+        Serial.print(ctrl);
+        Serial.print("; ");
+    }
+    Serial.println();
+    Serial.print("A PINS: ");
+    for (int i = 0; i < NUM_A_DEVICES; i++) {
+        char input[4];
+        pin_num_to_name(get_byte(A_INPUT(i)), input);
+        Serial.print(input);
+        Serial.print("/");
+        char trig[4];
+        pin_num_to_name(get_byte(A_TRIG(i)), trig);
+        Serial.print(trig);
+        Serial.print("; ");
+    }
+    Serial.println();
+    
+    Serial.println("End of settings");
+}
+
 /**
  * @brief Program the EEPROM with provided settings
  * secrets.h provides connection info
@@ -19,15 +68,13 @@ void program() {
     byte valid = get_byte(VALID);
     if (valid == EEPROM_SETTINGS_VALID) {
         Serial.println("EEPROM already valid");
-        Serial.println("Hit Enter to Program...");
-        while (!Serial.available()) {
-            // clang-format off
-            dash(); space(); space(); space();
-            // clang-format on
-            if (millis() > (1000 * 60)) {
-                Serial.println("1 minute without activity, hanging");
-                while (1)
-                    ;
+        Serial.println("Are you sure you want to program the EEPROM? (y/n)");
+        while (Serial.available() > 0) {
+            char c = Serial.read();
+            if (c == 'y') {
+                program();
+            } else if (c == 'n') {
+                return;
             }
         }
     }

@@ -13,38 +13,6 @@
 #define FILE_ "comm: "
 
 /**
- * @brief Convert pin string to Arduino pin number
- *
- * @param pin pin name e.g. "D0", "A3", "12", "-"
- * @return uint8_t pin number e.g. 0, 3, 12, UNUSED_PIN
- */
-uint8_t pin_name_to_num(char *pin) {
-    if (pin[0] == 'A') {
-        return atoi(pin + 1) + 14;
-    } else if (pin[0] == '-') {
-        return UNUSED_PIN;
-    } else {
-        return atoi(pin);
-    }
-}
-
-/**
- * @brief Convert Arduino pin number to pin string
- *
- * @param pin pin number e.g. 0, 3, 12, UNUSED_PIN
- * @param name pin name e.g. "D0", "A3", "D12", "-"
- */
-void pin_num_to_name(uint8_t pin, char *name) {
-    if (pin > 13) {
-        sprintf(name, "A%d", pin - 14);
-    } else if (pin == UNUSED_PIN) {
-        sprintf(name, "-");
-    } else {
-        sprintf(name, "D%d", pin);
-    }
-}
-
-/**
  * @brief Handle a command from an MQTT message
  *
  * @param topic Either "cmd/<station_name>" or "cmd/<station_name>/<device>"
@@ -128,7 +96,7 @@ void root_handle(char *input, Stream *resp) {
     }
     if (strcmp(cmd, "hello") == 0) {
         resp->println("Hello!");
-    } else if (cmd[0] == 'P') {
+    } else if (cmd[0] == 'P' && cmd[2] == '\0') {
         uint8_t id = cmd[1] - '0';
         if (id < 0 || id >= NUM_P_DEVICES) {
             ERR(FILE_, __LINE__);  // ERROR("Invalid P ID", "");
@@ -136,7 +104,7 @@ void root_handle(char *input, Stream *resp) {
         } else {
             p_device_handle(id, cmd, &saveptr, resp);
         }
-    } else if (cmd[0] == 'A') {
+    } else if (cmd[0] == 'A' && cmd[2] == '\0') {
         uint8_t id = cmd[1] - '0';
         if (id < 0 || id >= NUM_A_DEVICES) {
             ERR(FILE_, __LINE__);  // ERROR("Invalid A ID", "");
@@ -177,7 +145,7 @@ void root_handle(char *input, Stream *resp) {
 bool settings_handle(char *sett, char **saveptr, Stream *resp) {
     // clang-format off
     char sett_names[][12] = {
-        "version", "name", // Cannot set
+        "version", "category", "name", // Cannot set
         "ssid", "password", "mqtt_server", 
         "mqtt_port", "poll" // int, not string
     };
@@ -187,11 +155,13 @@ bool settings_handle(char *sett, char **saveptr, Stream *resp) {
         if (strcmp(sett, sett_names[i]) == 0) {
             char *value = strtok_r(NULL, " ", saveptr);
             int addr = FW_VERSION + SETTING_LEN * i;
+            bool is_int = i >= 6;
+            bool can_set = i >= 3;
             if (value == NULL) {
                 // Get
                 resp->print(sett);
                 resp->print(": ");
-                if (i > 4) {
+                if (is_int) {
                     // mqtt_port and poll are int
                     resp->println(get_int(addr));
                 } else {
@@ -201,14 +171,14 @@ bool settings_handle(char *sett, char **saveptr, Stream *resp) {
                 }
             } else {
                 // Set
-                if (i <= 1) {
+                if (!can_set) {
                     // Cannot set fw version or name
                     ERR(FILE_, __LINE__);  // ERROR("Cannot set ", sett);
                     return true;
                 }
                 resp->print(sett);
                 resp->print(" -> ");
-                if (i > 4) {
+                if (is_int) {
                     // mqtt_port and poll are int
                     set_int(addr, atoi(value));
                     resp->println(get_int(addr));

@@ -1,6 +1,5 @@
 #include "settings.h"
 
-#define FW_VERSION_ "0.0.1"
 #define CATEGORY_ "garden"
 #define STATION_NAME_ "beds-1"
 
