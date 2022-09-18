@@ -1,7 +1,7 @@
 #include "settings.h"
 
 #define CATEGORY_ "garden"
-#define STATION_NAME_ "beds-1"
+#define STATION_NAME_ "tank-0"
 
 // clang-format off
 //                0  1  2  3           4

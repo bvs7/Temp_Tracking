@@ -49,7 +49,7 @@
 
 // End of settings: 0x0B0
 
-#define BUFFER_SIZE 32
+#define BUFFER_SIZE 64
 
 // Device state
 typedef byte p_state;

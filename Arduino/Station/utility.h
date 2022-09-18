@@ -1,7 +1,7 @@
 #ifndef UTILITY_H_
 #define UTILITY_H_
 
-#define DEBUG_LOG_LEVEL 2
+#define DEBUG_LOG_LEVEL 1
 
 /* Debug levels:
 0 - No debug

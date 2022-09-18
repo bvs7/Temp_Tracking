@@ -1,7 +1,7 @@
 
 #include "settings.h"
 
-// #define PROGRAMMING_MODE
+//#define PROGRAMMING_MODE
 #ifndef PROGRAMMING_MODE
 
 #include "commands.h"
@@ -63,7 +63,7 @@ void serial_callback() {
 void setup() {
     Serial.begin(9600);
     wdt_disable();
-    INFO("Start", "");
+    Serial.println("Start");
     util_setup();
     if(!check_fw_version()){
         while(1){

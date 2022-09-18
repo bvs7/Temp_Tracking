@@ -58,7 +58,7 @@ void update_p_device(uint8_t idx) {
         return;
     }
     byte ctrl = get_byte(P_CTRL(idx));
-    p_state new_state = (digitalRead(sense) ? SENSE_MASK : 0) |
+    p_state new_state = (digitalRead(sense) ? 0 : SENSE_MASK) |
                         (digitalRead(ctrl) ? CTRL_MASK : 0);
     if (p_states[idx] != new_state) {
         WARN("Update P", idx);
@@ -110,6 +110,7 @@ void p_device_setup(uint8_t idx) {
     pinMode(sense, INPUT);
     pinMode(ctrl, OUTPUT);
     digitalWrite(ctrl, get_byte(p_states[idx]) & CTRL_MASK);
+    p_states[idx] |= P_REQUEST_FLAG;
 }
 
 /**

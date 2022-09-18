@@ -140,6 +140,7 @@ Base/logs/*
 
 # vscode properties
 .vscode/*
+*.code-workspace
 
 # Secret files
 *secrets.h

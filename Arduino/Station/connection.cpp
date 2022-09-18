@@ -65,7 +65,6 @@ byte wifi_connect() {
             // clang-format off
             dash(); dot(); space();
             dash(); dot(); space();
-            dash(); dot(); space();
             // clang-format on
         case WL_CONNECTED:
             break;
@@ -112,7 +111,7 @@ int8_t mqtt_connect() {
                      station_name);
             subscribe(topic, 0);
             // clang-format off
-            dash(); dot(); dot(); space();
+            Serial.println("Connected!");
             dash(); dot(); dot(); space();
             dash(); dot(); dot(); space();
             // clang-format on
@@ -128,10 +127,10 @@ int8_t mqtt_connect() {
  */
 bool publish_data(const char *topic_suffix, const char *payload, bool retain) {
     char topic[BUFFER_SIZE];
-    snprintf(topic, BUFFER_SIZE, (DATA "%s/%s/%s"), category, station_name,
+    snprintf(topic, BUFFER_SIZE, (DATA "/%s/%s/%s"), category, station_name,
              topic_suffix);
-    DEBUG("Publish Data: ", topic);
-    DEBUG(" ", payload);
+    WARN("Publish Data: ", topic);
+    WARN(" ", payload);
     return mqtt_client.publish(topic, payload, retain);
 }
 
@@ -143,7 +142,7 @@ bool publish_data(const char *topic_suffix, const char *payload, bool retain) {
  */
 bool publish_log(const char *message, bool retain) {
     char topic[BUFFER_SIZE];
-    snprintf(topic, BUFFER_SIZE, (LOG "/%s"), station_name);
+    snprintf(topic, BUFFER_SIZE, (LOG "/%s/%s"), category, station_name);
     DEBUG("Publish Log: ", message);
     return mqtt_client.publish(topic, message, retain);
 }
