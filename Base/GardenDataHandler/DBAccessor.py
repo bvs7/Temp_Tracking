@@ -25,6 +25,10 @@ class DBAccessor():
         "SELECT * FROM DeviceEvents WHERE (station_name, device_type, "\
         "device_idx) = (?,?,?) AND date(event_time) = date(?)"
 
+    DeviceEvents_Select_Since = \
+        "SELECT * FROM DeviceEvents WHERE (station_name, device_type, "\
+        "device_idx) = (?,?,?) AND event_time >= ?"
+
     def __init__(self, db_fname: str, dir_name: str):
         self.db_fname = db_fname
         self.dir_name = dir_name
@@ -136,6 +140,15 @@ class DBAccessor():
             cursor = conn.cursor()
             data = (station_name, device_type, device_idx, event_time)
             cursor.execute(self.DeviceEvents_Select_Date, data)
+            rows = cursor.fetchall()
+            return rows
+
+    def get_events_since(self, station_name:str, device_type:str,
+                        device_idx:int, since_time:datetime) -> Tuple[str, int]:
+        with sqlite3.connect(self.db_fname) as conn:
+            cursor = conn.cursor()
+            data = (station_name, device_type, device_idx, since_time)
+            cursor.execute(self.DeviceEvents_Select_Since, data)
             rows = cursor.fetchall()
             return rows
 
