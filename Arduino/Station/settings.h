@@ -26,6 +26,7 @@
 #define VALID 0x000
 #define FW_VERSION 0x010
 
+// gemini-home 
 #define CATEGORY (FW_VERSION + SETTING_LEN)
 
 #define STATION_NAME (CATEGORY + SETTING_LEN)
@@ -51,6 +52,11 @@
 
 #define BUFFER_SIZE 64
 
+typedef struct p_config{
+    byte sense;
+    byte ctrl;
+}p_config;
+
 // Device state
 typedef byte p_state;
 #define CTRL_MASK 0x01
@@ -62,11 +68,12 @@ extern char state_str[][10];
 typedef int a_value;
 #define A_REQUEST_FLAG -1
 
-extern p_state p_states[];
-extern a_value a_values[];
-
 extern char category[];
 extern char station_name[];
+extern p_config p[];
+
+extern p_state p_states[];
+extern a_value a_values[];
 
 uint8_t pin_name_to_num(char *pin);
 void pin_num_to_name(uint8_t pin, char *name);

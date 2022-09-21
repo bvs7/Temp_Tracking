@@ -122,29 +122,16 @@ int8_t mqtt_connect() {
 /**
  * @brief Publish a data message to the MQTT broker.
  *
- * @param topic_suffix Topic will be: "data/<station_name>/<topic_suffix>"
+ * @param topic_suffix Topic will be: "<category>/<station_name>/<topic_suffix>"
  * @return If the message was published successfully.
  */
-bool publish_data(const char *topic_suffix, const char *payload, bool retain) {
-    char topic[BUFFER_SIZE];
-    snprintf(topic, BUFFER_SIZE, (DATA "/%s/%s/%s"), category, station_name,
+bool publish(const char *topic_suffix, const char *payload, bool retain) {
+    char topic[40];
+    snprintf(topic, 40, "%s/%s/%s", category, station_name,
              topic_suffix);
-    WARN("Publish Data: ", topic);
-    WARN(" ", payload);
+    DEBUG("Publish Data: ", topic);
+    DEBUG(" ", payload);
     return mqtt_client.publish(topic, payload, retain);
-}
-
-/**
- * @brief Publish a log message to the MQTT broker.
- *      Topic will be "log/<station_name>"
- *
- * @return If the message was published successfully.
- */
-bool publish_log(const char *message, bool retain) {
-    char topic[BUFFER_SIZE];
-    snprintf(topic, BUFFER_SIZE, (LOG "/%s/%s"), category, station_name);
-    DEBUG("Publish Log: ", message);
-    return mqtt_client.publish(topic, message, retain);
 }
 
 /**
@@ -185,18 +172,23 @@ PubSubClient *set_callback(MQTT_CALLBACK_SIGNATURE) {
 /**
  * @brief Called in main setup()
  */
-void connection_setup() {
+void connection_setup(MQTT_CALLBACK_SIGNATURE) {
     Serial1.begin(AT_BAUD_RATE);
 
     WiFi.init(&Serial1);  // Necessary here to prevent failure
+
+    // 5:01 keepalive, analog inputs will preempt this
+    mqtt_client.setKeepAlive(get_int(POLL_INTERVAL)+1);
+    mqtt_client.setCallback(callback); // parameter to connection setup
+
     // If no shield, stop trying to reconnect
     byte w_status = WiFi.status();
     if (w_status == WL_NO_SHIELD) {
         ERROR("No WiFi Shield: ", w_status);
         connect = false;
+    }else{
+        mqtt_connect();
     }
-    // 5:01 keepalive, analog inputs will preempt this
-    mqtt_client.setKeepAlive(get_int(POLL_INTERVAL)+1);
 }
 
 /**

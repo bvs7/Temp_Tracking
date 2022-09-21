@@ -1,7 +1,11 @@
+#include "devices.h"
+
 #include "Arduino.h"
 #include "connection.h"
 #include "settings.h"
 #include "utility.h"
+
+#include "PubSubClient.h"
 
 unsigned long last_tick_millis = 0;
 unsigned long seconds = 0;
@@ -39,7 +43,7 @@ int dist_sensor(int trig_pin, int echo_pin) {
  * @param idx Port Number
  * @param set true for ON, false for OFF
  */
-void p_device_set(uint8_t idx, bool set) {
+void p_ctrl_set(byte idx, bool set) {
     if (set) {
         digitalWrite(get_byte(P_CTRL(idx)), HIGH);
     } else {
@@ -53,7 +57,7 @@ void p_device_set(uint8_t idx, bool set) {
  * @param idx Port Number
  */
 void update_p_device(uint8_t idx) {
-    byte sense = get_byte(P_SENSE(idx));
+    byte sense = get_byte(p[idx].sense);
     if (sense == UNUSED_PIN) {
         return;
     }
@@ -64,34 +68,11 @@ void update_p_device(uint8_t idx) {
         WARN("Update P", idx);
         WARN("", state_str[new_state]);
         p_states[idx] = new_state;
-        char topic[3] = "P0";
+        char topic[9] = "p0/state";
         topic[1] += idx;
-        publish_data(topic, state_str[new_state], true);
+        char value_str[2] = "0";
+        publish(topic, itoa(new_state,value_str,10), true);
     }
-}
-
-/**
- * @brief Get sensor reading and send update
- *
- * @param idx Sensor Number
- */
-void update_a_device(uint8_t idx) {
-    byte input = get_byte(A_INPUT(idx));
-    if (input == UNUSED_PIN) {
-        return;
-    }
-    int new_value = a_values[idx];
-    byte trig = get_byte(A_TRIG(idx));
-    if (trig == UNUSED_PIN) {
-        new_value = analogRead(input);
-    } else {
-        new_value = dist_sensor(trig, input);
-    }
-    a_values[idx] = new_value;
-    char topic[3] = "A0";
-    topic[1] += idx;
-    char value_str[6];
-    publish_data(topic, itoa(new_value, value_str, 10), true);
 }
 
 /**
@@ -113,25 +94,67 @@ void p_device_setup(uint8_t idx) {
     p_states[idx] |= P_REQUEST_FLAG;
 }
 
-/**
- * @brief Update the pin modes for a port
- *      TODO: Keep track of pin use and switch duplicate pins to UNUSED_PIN
- * @param idx Sensor Number
- */
-void a_device_setup(uint8_t idx) {
-    byte input = get_byte(A_INPUT(idx));
-    if (input == UNUSED_PIN) {
-        return;
+typedef PubSubClient MQTTclient;
+
+void homie_setup(char *category, char *station_name){
+
+    char topic[40]; // topic: "homie/device_id/"
+    snprintf(topic, 40, "%s/%s/", category, station_name);
+    char *setting = topic + strlen(topic);
+    publish_homie_sett(topic, setting, "$homie", "4.0.0");
+    publish_homie_sett(topic, setting, "$state", "init");
+    publish_homie_sett(topic, setting, "$name", station_name);
+    publish_homie_sett(topic, setting, "$nodes", "p0,p2");
+    publish_homie_sett(topic, setting, "$extensions", "");
+
+    for(uint8_t i=0; i<5; i+=1){
+        if(get_byte(P_SENSE(i)) == UNUSED_PIN){
+            continue;
+        }
+        char node[4] = "p0"; // Extra space for '/'
+        node[1] += i;
+        if (i == 0){
+            homie_pnode_setup(node, topic, setting, "pump");
+        }else{
+            homie_pnode_setup(node, topic, setting, "valve");
+        }
     }
-    byte trig = get_byte(A_TRIG(idx));
-    // TODO: check pin conflicts
-    pinMode(input, INPUT);
-    if (trig != UNUSED_PIN) {
-        pinMode(trig, OUTPUT);
-        digitalWrite(trig, LOW);
-    }
-    // This device is an analog input, set request for reading
-    a_values[idx] = A_REQUEST_FLAG;
+
+    publish_homie_sett(topic, setting, "$state", "ready");
+
+    strcpy(setting, "+/+/set"); // topic: "homie/device_id/+/+/set"
+    subscribe(topic, 1);
+}
+
+void homie_pnode_setup(char *n_id, char *topic, char *sett, char *n_type){
+
+    strcpy(sett, n_id); // topic: "homie/device_id/pN"
+    char *n_setting = topic + strlen(topic);
+    strcpy(n_setting, "/");   // topic: "homie/device_id/pN/"
+    n_setting = topic + strlen(topic);
+    publish_homie_sett(topic, n_setting, "$name", n_id);
+    publish_homie_sett(topic, n_setting, "$type", n_type);
+    publish_homie_sett(topic, n_setting, "$properties", "ctrl,state");
+
+    strcpy(n_setting, "ctrl/"); // topic: "homie/device_id/pN/ctrl/"
+    char *p_setting = topic + strlen(topic);
+    publish_homie_sett(topic, p_setting, "$name", "ctrl");
+    publish_homie_sett(topic, p_setting, "$datatype", "boolean");
+    publish_homie_sett(topic, p_setting, "$settable", "true");
+
+    strcpy(n_setting, "state/"); // topic: "homie/device_id/pN/state/"
+    p_setting = topic + strlen(topic);
+    publish_homie_sett(topic, p_setting, "$name", "state");
+    publish_homie_sett(topic, p_setting, "$datatype", "integer");
+    publish_homie_sett(topic, p_setting, "$format", "0:7");
+
+    strcpy(sett, ""); // Reset topic to "homie/device_id/"
+}
+
+void publish_homie_sett(char *base_topic, char *sett_loc,
+                        const char *sett_name, const char *sett_value){
+    strcpy(sett_loc, sett_name);
+    publish(base_topic, sett_value, true);
 }
 
 /**
@@ -139,17 +162,22 @@ void a_device_setup(uint8_t idx) {
  */
 void devices_setup() {
     VERBOSE("Devices setup", "");
+
+    homie_setup(category, station_name);
     // Reset pin conflicts
     // TODO: Consider conflicts from utility.h, LED_PIN and DEBUG_LED_ENABLE
     for (uint8_t i = 0; i < NUM_P_DEVICES; i++) {
         p_device_setup(i);
     }
 
-    for (uint8_t i = 0; i < NUM_A_DEVICES; i++) {
-        a_device_setup(i);
+    last_tick_millis = millis();
+}
+
+void sec_loop(unsigned long seconds) {
+    for (uint8_t i = 0; i < NUM_P_DEVICES; i++) {
+        update_p_device(i);
     }
 
-    last_tick_millis = millis();
 }
 
 /**
@@ -165,22 +193,7 @@ void devices_loop() {
     if (current_millis - last_tick_millis > SEC) {
         VERBOSE("Tick ", seconds);
         dot();
-        int poll_interval = get_int(POLL_INTERVAL);
-        if (seconds % poll_interval == 0) {
-            DEBUG("Poll ", seconds);
-            for (uint8_t i = 0; i < NUM_A_DEVICES; i++) {
-                update_a_device(i);
-            }
-        }
-        for (uint8_t i = 0; i < NUM_P_DEVICES; i++) {
-            update_p_device(i);
-        }
-        // Check for requested a device input
-        for (uint8_t i = 0; i < NUM_A_DEVICES; i++) {
-            if (a_values[i] == A_REQUEST_FLAG) {
-                update_a_device(i);
-            }
-        }
+        
         seconds += 1;
         while (current_millis - last_tick_millis > SEC) {
             last_tick_millis += SEC;
