@@ -9,9 +9,6 @@
 #include "devices.h"
 #include "utility.h"
 
-// library includes
-#include <avr/wdt.h>
-
 #include "LoopbackStream.h"
 
 #define FILE_ "main: "
@@ -31,7 +28,7 @@ char station_name[SETTING_LEN];
 p_config p[NUM_P_DEVICES];
 
 p_state p_states[NUM_P_DEVICES] = {0};
-a_value a_values[NUM_A_DEVICES];
+// a_value a_values[NUM_A_DEVICES];
 
 
 /**
@@ -67,6 +64,11 @@ void load_config()
     free(station_name_tmp);
 
     EEPROM.get(P, p);
+    char *p_name_tmp = get_str(P, SETTING_LEN);
+    Serial.println(p_name_tmp);
+    free(p_name_tmp);
+
+    Serial.println("Loaded config");
 }
 
 void setup()

@@ -10,12 +10,12 @@
 #define FILE_ "comm: "
 
 void homie_mqtt_handle(char *topic, byte *payload, unsigned int length){
-    
-    if(strncmp(topic, "gemini-home/", 12) != 0){
+    WARN("mqtt msg ", topic);
+    if(strncmp(topic, category, strlen(category)) != 0){
         ERR(FILE_, __LINE__);  // ERROR("Invalid topic");
         return;
     }
-    if(strncmp(topic+12, station_name, strlen(station_name)) != 0){
+    if(strncmp(topic+strlen(category)+1, station_name, strlen(station_name)) != 0){
         ERR(FILE_, __LINE__);  // ERROR("Invalid station name");
         return;
     }

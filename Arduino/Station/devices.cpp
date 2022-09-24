@@ -45,9 +45,9 @@ int dist_sensor(int trig_pin, int echo_pin) {
  */
 void p_ctrl_set(byte idx, bool set) {
     if (set) {
-        digitalWrite(get_byte(P_CTRL(idx)), HIGH);
+        digitalWrite(p[idx].ctrl, HIGH);
     } else {
-        digitalWrite(get_byte(P_CTRL(idx)), LOW);
+        digitalWrite(p[idx].ctrl, LOW);
     }
 }
 
@@ -57,18 +57,18 @@ void p_ctrl_set(byte idx, bool set) {
  * @param idx Port Number
  */
 void update_p_device(uint8_t idx) {
-    byte sense = get_byte(p[idx].sense);
+    byte sense = p[idx].sense;
     if (sense == UNUSED_PIN) {
         return;
     }
-    byte ctrl = get_byte(P_CTRL(idx));
+    byte ctrl = p[idx].ctrl;
     p_state new_state = (digitalRead(sense) ? 0 : SENSE_MASK) |
                         (digitalRead(ctrl) ? CTRL_MASK : 0);
     if (p_states[idx] != new_state) {
         WARN("Update P", idx);
         WARN("", state_str[new_state]);
         p_states[idx] = new_state;
-        char topic[9] = "p0/state";
+        char topic[10] = "p0/state";
         topic[1] += idx;
         char value_str[2] = "0";
         publish(topic, itoa(new_state,value_str,10), true);
@@ -82,15 +82,15 @@ void update_p_device(uint8_t idx) {
  */
 void p_device_setup(uint8_t idx) {
     VERBOSE("Setting up P", idx);
-    byte sense = get_byte(P_SENSE(idx));
+    byte sense = p[idx].sense;;
     if (sense == UNUSED_PIN) {
         return;
     }
-    byte ctrl = get_byte(P_CTRL(idx));
+    byte ctrl = p[idx].ctrl;
     // TODO: check pin conflicts
     pinMode(sense, INPUT);
     pinMode(ctrl, OUTPUT);
-    digitalWrite(ctrl, get_byte(p_states[idx]) & CTRL_MASK);
+    digitalWrite(ctrl, p_states[idx] & CTRL_MASK);
     p_states[idx] |= P_REQUEST_FLAG;
 }
 
@@ -108,7 +108,7 @@ void homie_setup(char *category, char *station_name){
     publish_homie_sett(topic, setting, "$extensions", "");
 
     for(uint8_t i=0; i<5; i+=1){
-        if(get_byte(P_SENSE(i)) == UNUSED_PIN){
+        if(p[i].sense == UNUSED_PIN){
             continue;
         }
         char node[4] = "p0"; // Extra space for '/'
@@ -121,9 +121,6 @@ void homie_setup(char *category, char *station_name){
     }
 
     publish_homie_sett(topic, setting, "$state", "ready");
-
-    strcpy(setting, "+/+/set"); // topic: "homie/device_id/+/+/set"
-    subscribe(topic, 1);
 }
 
 void homie_pnode_setup(char *n_id, char *topic, char *sett, char *n_type){
@@ -154,7 +151,8 @@ void homie_pnode_setup(char *n_id, char *topic, char *sett, char *n_type){
 void publish_homie_sett(char *base_topic, char *sett_loc,
                         const char *sett_name, const char *sett_value){
     strcpy(sett_loc, sett_name);
-    publish(base_topic, sett_value, true);
+    mqtt_client.publish(base_topic, sett_value, true);
+    mqtt_client.loop();
 }
 
 /**
@@ -170,7 +168,10 @@ void devices_setup() {
         p_device_setup(i);
     }
 
+
     last_tick_millis = millis();
+
+    Serial.println("Setup complete");
 }
 
 void sec_loop(unsigned long seconds) {
@@ -193,7 +194,7 @@ void devices_loop() {
     if (current_millis - last_tick_millis > SEC) {
         VERBOSE("Tick ", seconds);
         dot();
-        
+        sec_loop(seconds);
         seconds += 1;
         while (current_millis - last_tick_millis > SEC) {
             last_tick_millis += SEC;

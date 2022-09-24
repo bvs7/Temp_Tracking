@@ -14,5 +14,6 @@ bool unsubscribe(const char *topic);
 void connection_setup(MQTT_CALLBACK_SIGNATURE);
 void connection_loop();
 
+extern PubSubClient mqtt_client;
 
 #endif  // CONNECTION_H_

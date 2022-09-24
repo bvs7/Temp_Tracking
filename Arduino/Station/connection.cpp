@@ -106,12 +106,13 @@ int8_t mqtt_connect() {
             // Intentional fallthrough
         case MQTT_CONNECTED:
             INFO("MQTT: ", "Connected");
-            char topic[2 * SETTING_LEN];
-            snprintf(topic, 2 * SETTING_LEN, "%s/%s/%s/#", CMD, category,
-                     station_name);
-            subscribe(topic, 0);
+            
+            delay(500);
+            char topic[40];
+            sprintf(topic, "%s/%s/+/+/set", category, station_name);
+            subscribe(topic,0);
             // clang-format off
-            Serial.println("Connected!");
+            Serial.println("Connected!...");
             dash(); dot(); dot(); space();
             dash(); dot(); dot(); space();
             // clang-format on
@@ -127,8 +128,7 @@ int8_t mqtt_connect() {
  */
 bool publish(const char *topic_suffix, const char *payload, bool retain) {
     char topic[40];
-    snprintf(topic, 40, "%s/%s/%s", category, station_name,
-             topic_suffix);
+    sprintf(topic, "%s/%s/%s", category, station_name, topic_suffix);
     DEBUG("Publish Data: ", topic);
     DEBUG(" ", payload);
     return mqtt_client.publish(topic, payload, retain);
@@ -142,7 +142,7 @@ bool subscribe(const char *topic, int qos) {
         INFO("Subscribed to topic ", topic);
         return true;
     } else {
-        ERR(FILE_, __LINE__);  // ERROR("Failed to subscribe to topic ", topic);
+        ERR(FILE_, __LINE__); 
         return false;
     }
 }
@@ -155,11 +155,11 @@ bool unsubscribe(const char *topic) {
         INFO("Unsubscribed from topic ", topic);
         return true;
     } else {
-        ERR(FILE_,
-            __LINE__);  // ERROR("Failed to unsubscribe from topic ", topic);
+        ERR(FILE_, __LINE__); 
         return false;
     }
 }
+
 
 /**
  * @brief Set callback for when a message is received from the MQTT broker.
