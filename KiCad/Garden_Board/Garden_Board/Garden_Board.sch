@@ -1665,7 +1665,7 @@ Connection ~ 4750 5850
 Connection ~ 6200 5900
 Connection ~ 9750 4650
 $Comp
-L Arduino:Arduino_Pro_Mini U2
+L Garden_Board-rescue:Arduino_Pro_Mini-Arduino U2
 U 1 1 622CD4AE
 P 4650 1800
 F 0 "U2" H 4650 2689 60  0000 C CNN
