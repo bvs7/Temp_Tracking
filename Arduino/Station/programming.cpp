@@ -12,17 +12,29 @@ void print_settings(){
     Serial.print("VALID: ");
     Serial.println(get_byte(VALID));
     Serial.print("FW_VERSION: ");
-    Serial.println(get_str(FW_VERSION, SETTING_LEN));
+    char *setting = get_str(FW_VERSION, SETTING_LEN);
+    Serial.println(setting);
+    free(setting);
     Serial.print("CATEGORY: ");
-    Serial.println(get_str(CATEGORY, SETTING_LEN));
+    setting = get_str(CATEGORY, SETTING_LEN);
+    Serial.println(setting);
+    free(setting);
     Serial.print("STATION_NAME: ");
-    Serial.println(get_str(STATION_NAME, SETTING_LEN));
+    setting = get_str(STATION_NAME, SETTING_LEN);
+    Serial.println(setting);
+    free(setting);
     Serial.print("WIFI_SSID: ");
-    Serial.println(get_str(WIFI_SSID, SETTING_LEN));
+    setting = get_str(WIFI_SSID, SETTING_LEN);
+    Serial.println(setting);
+    free(setting);
     Serial.print("WIFI_PASSWD: ");
-    Serial.println(get_str(WIFI_PASSWD, SETTING_LEN));
+    setting = get_str(WIFI_PASSWD, SETTING_LEN);
+    Serial.println(setting);
+    free(setting);
     Serial.print("MQTT_SERVER: ");
-    Serial.println(get_str(MQTT_SERVER, SETTING_LEN));
+    setting = get_str(MQTT_SERVER, SETTING_LEN);
+    Serial.println(setting);
+    free(setting);
     Serial.print("MQTT_PORT: ");
     Serial.println(get_int(MQTT_PORT));
     Serial.print("POLL_INTERVAL: ");
@@ -81,24 +93,31 @@ void program() {
 
     INFO("Write FW version ", FW_VERSION_);
     set_str(FW_VERSION, FW_VERSION_, SETTING_LEN);
+    delay(10);
 
     INFO("Write category ", CATEGORY_);
     set_str(CATEGORY, CATEGORY_, SETTING_LEN);
+    delay(10);
 
     INFO("Write station name ", STATION_NAME_);
     set_str(STATION_NAME, STATION_NAME_, SETTING_LEN);
+    delay(10);
 
     INFO("Write ssid ", WIFI_SSID_);
     set_str(WIFI_SSID, WIFI_SSID_, SETTING_LEN);
+    delay(10);
 
     INFO("Write password ", WIFI_PASSWD_);
     set_str(WIFI_PASSWD, WIFI_PASSWD_, SETTING_LEN);
+    delay(10);
 
     INFO("Write MQTT server ", MQTT_SERVER_);
     set_str(MQTT_SERVER, MQTT_SERVER_, SETTING_LEN);
+    delay(10);
 
     INFO("Write MQTT port ", MQTT_PORT_);
     set_int(MQTT_PORT, MQTT_PORT_);
+    delay(10);
 
     // P devices
     INFO("Write P devices:", "");

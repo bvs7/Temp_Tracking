@@ -4,9 +4,6 @@
 #include "Arduino.h"
 #include "EEPROM.h"
 
-// EEPROM length is 1024 bytes, 0x400
-
-#define START_ADDR 0x020
 
 /**
  * @brief Convert pin string to Arduino pin number
@@ -55,6 +52,10 @@ int get_int(int addr) {
  */
 char *get_str(int addr, size_t length) {
     char *s = (char *)malloc(length);
+    if(s == NULL) {
+        Serial.println("get_str fail!");
+        return NULL;
+    }
     memset(s, 0, length);
     for (uint8_t i = 0; i < length - 1; i++) {
         s[i] = EEPROM.read(addr + i);
@@ -63,6 +64,16 @@ char *get_str(int addr, size_t length) {
         }
     }
     return s;
+}
+
+void get_str_(int addr, size_t length, char *s) {
+    memset(s, 0, length);
+    for (uint8_t i = 0; i < length - 1; i++) {
+        s[i] = EEPROM.read(addr + i);
+        if (s[i] == '\0') {
+            break;
+        }
+    }
 }
 
 /** @brief Set the byte at addr of EEPROM */
@@ -85,7 +96,8 @@ void set_str(int addr, char *s, size_t length) {
 }
 
 bool check_fw_version(){
-    char *fw_version = get_str(FW_VERSION, SETTING_LEN);
+    char fw_version[SETTING_LEN];
+    get_str_(FW_VERSION, SETTING_LEN, fw_version);
     if (strcmp(fw_version, FW_VERSION_) != 0) {
         Serial.print("EEPROM FW version mismatch: ");
         Serial.print(fw_version);

@@ -5,8 +5,6 @@
 #include "settings.h"
 #include "utility.h"
 
-#include "PubSubClient.h"
-
 unsigned long last_tick_millis = 0;
 unsigned long seconds = 0;
 
@@ -49,6 +47,9 @@ void p_ctrl_set(byte idx, bool set) {
     } else {
         digitalWrite(p[idx].ctrl, LOW);
     }
+    char topic[10] = "p0/ctrl";
+    topic[1] += idx;
+    publish_data(topic, set ? "true" : "false",false);
 }
 
 /**
@@ -71,7 +72,7 @@ void update_p_device(uint8_t idx) {
         char topic[10] = "p0/state";
         topic[1] += idx;
         char value_str[2] = "0";
-        publish(topic, itoa(new_state,value_str,10), true);
+        publish_data(topic, itoa(new_state,value_str,10), true);
     }
 }
 
@@ -94,8 +95,6 @@ void p_device_setup(uint8_t idx) {
     p_states[idx] |= P_REQUEST_FLAG;
 }
 
-typedef PubSubClient MQTTclient;
-
 void homie_setup(char *category, char *station_name){
 
     char topic[40]; // topic: "homie/device_id/"
@@ -104,7 +103,23 @@ void homie_setup(char *category, char *station_name){
     publish_homie_sett(topic, setting, "$homie", "4.0.0");
     publish_homie_sett(topic, setting, "$state", "init");
     publish_homie_sett(topic, setting, "$name", station_name);
-    publish_homie_sett(topic, setting, "$nodes", "p0,p2");
+
+    char nodes[32] = {0};
+    bool first = true;
+    for(int i=0; i < NUM_P_DEVICES; i++){
+        if(p[i].sense != UNUSED_PIN){
+            char node[4] = "p0";
+            node[1] += i;
+            if(first){
+                first = false;
+            } else {
+                strcat(nodes, ",");
+            }
+            strcat(nodes, node);
+        }
+    }
+
+    publish_homie_sett(topic, setting, "$nodes", nodes);
     publish_homie_sett(topic, setting, "$extensions", "");
 
     for(uint8_t i=0; i<5; i+=1){
@@ -151,7 +166,7 @@ void homie_pnode_setup(char *n_id, char *topic, char *sett, char *n_type){
 void publish_homie_sett(char *base_topic, char *sett_loc,
                         const char *sett_name, const char *sett_value){
     strcpy(sett_loc, sett_name);
-    mqtt_client.publish(base_topic, sett_value, true);
+    publish(base_topic, sett_value, true);
     mqtt_client.loop();
 }
 

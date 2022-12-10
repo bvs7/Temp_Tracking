@@ -3,17 +3,18 @@
 
 #define _ESPLOGLEVEL_ 0
 
-#include "PubSubClient.h"
+#include "MQTT.h"
 #include "WiFiEsp.h"
 #include "settings.h"
 
 bool publish(const char *topic, const char *payload, bool retain);
+bool publish_data(const char *topic_suffix, const char *payload, bool retain);
 bool subscribe(const char *topic, int qos);
 bool unsubscribe(const char *topic);
 
-void connection_setup(MQTT_CALLBACK_SIGNATURE);
+void connection_setup( MQTTClientCallbackAdvanced callback);
 void connection_loop();
 
-extern PubSubClient mqtt_client;
+extern MQTTClient mqtt_client;
 
 #endif  // CONNECTION_H_

@@ -81,6 +81,7 @@ void pin_num_to_name(uint8_t pin, char *name);
 byte get_byte(int addr);
 int get_int(int addr);
 char *get_str(int addr, size_t length);
+void get_str_(int addr, size_t length, char *str);
 
 void set_byte(int addr, byte val);
 void set_int(int addr, int val);

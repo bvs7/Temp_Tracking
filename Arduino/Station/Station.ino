@@ -37,7 +37,7 @@ p_state p_states[NUM_P_DEVICES] = {0};
  * @param topic mqtt topic, should be "cmd/<station_name>/[<device_name>]"
  * @param payload Either a root command or details for a device command
  */
-void mqtt_callback(char *topic, byte *payload, unsigned int length)
+void mqtt_callback(MQTTClient *client, char *topic, byte *payload, unsigned int length)
 {
     homie_mqtt_handle(topic, payload, length);
 }
@@ -56,17 +56,10 @@ void load_config()
         while (1)
             ;
     }
-    char *category_tmp = get_str(CATEGORY, SETTING_LEN);
-    strcpy(category, category_tmp);
-    free(category_tmp);
-    char *station_name_tmp = get_str(STATION_NAME, SETTING_LEN);
-    strcpy(station_name, station_name_tmp);
-    free(station_name_tmp);
+    get_str_(CATEGORY, SETTING_LEN, category);
+    get_str_(STATION_NAME, SETTING_LEN, station_name);
 
     EEPROM.get(P, p);
-    char *p_name_tmp = get_str(P, SETTING_LEN);
-    Serial.println(p_name_tmp);
-    free(p_name_tmp);
 
     Serial.println("Loaded config");
 }
@@ -79,7 +72,7 @@ void setup()
     
     load_config();
 
-    connection_setup(mqtt_callback);
+    connection_setup((MQTTClientCallbackAdvanced) mqtt_callback);
     devices_setup();
 }
 
