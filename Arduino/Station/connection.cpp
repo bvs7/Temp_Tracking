@@ -30,6 +30,9 @@ byte wifi_connect() {
     byte status = WiFi.status();
     switch (status) {
         case WL_NO_SHIELD:
+            // Try to reinitialize the Serial1 connection?
+            Serial1.end();
+            Serial1.begin(AT_BAUD_RATE);
         case WL_DISCONNECTED:
             WiFi.init(&Serial1);
             status = WiFi.status();

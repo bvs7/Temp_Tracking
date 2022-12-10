@@ -7,6 +7,33 @@ Serial communication for setup/initial settings, and testing
 
 # Spec
 
+
+## Issue!
+
+Arduino wireless capabilities seem to lack robustness. Test to determine what can be done.
+
+### Wifi Tests
+
+- Time it takes to connect
+- Staying connected for a long time
+- Arduino sleeping while connected
+- Test various areas outside.
+- Connection loss. What happens?
+
+### TCP Tests
+
+- Payload size within reason
+- Send after a very long dry spell
+- Continuous operation over days
+- Graceful recovery when server is down?
+
+### MQTT Tests
+
+- Station publish consistency
+- Station subscribe/receive consistency
+- Stress test
+- Long term testing
+
 ## Definitions
 Use unknown bit to flag devices for publication. When device_state changes in main loop, data is published. So set unknown bit, and it will be unset upon main loop, prompting publish.
 
